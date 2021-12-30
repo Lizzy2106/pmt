@@ -1,0 +1,24 @@
+{% extends 'old/base.html' %}
+{% block pageTitle %}Project Manager{% endblock %}
+{% block pageContent %}
+<style type="text/css">
+  .bg-cover {
+    background-size: cover !important;
+}
+</style>
+
+              <!-- Bootstrap Static Header -->
+              <div style="background: url(https://i.postimg.cc/3N7wnb75/background.jpg)" class="jumbotron bg-cover text-white">
+                  <div class="container py-5 text-center">
+                      <h1 class="display-4 font-weight-bold">Bienvenue</h1>
+                      <p class="font-italic mb-0">N'oubliez pas de mettre à jour votre profil </strong>do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in <strong class="font-weight-bold text-black">reprehenderit in voluptate </strong>velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+                      <p class="font-italic mb-0">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
+                      tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
+                      quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
+                      consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
+                      cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
+                      proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+                      <a href="{% url 'profile' request.user.id %}" role="button" class="btn btn-primary px-5">Éditer le profil</a>
+                  </div>
+              </div>
+{% endblock %}

@@ -1,0 +1,729 @@
+{% extends 'old/base.html' %}
+{% load static %}
+{% load has_group %}
+{% load perms_list %}
+{% load i18n %}
+
+{% block pageTitle %}
+	<div class="d-flex justify-content-between">
+		<div class="p-2">Groupes et permissions</div>
+		<div class=" ml-auto p-2"><a class="btn btn-primary btn-user btn-block group" action="add" href="#" data-toggle="modal" data-target="#addGroup" >Nouveau groupe</a></div>
+	</div>
+{% endblock %}
+
+{% block pageContent %}
+
+{% if trash %}
+  <link href="{% static 'css/trash.css' %}" rel="stylesheet">
+{% endif %}
+
+<!-- JQuery DataTable Css -->
+<style type="text/css">
+  .dataTables_filter, .dataTables_info { display: none; }
+  table.dataTable thead .sorting:before,
+  table.dataTable thead .sorting_asc:before,
+  table.dataTable thead .sorting_desc:before,
+  table.dataTable thead .sorting_asc_disabled:before,
+  table.dataTable thead .sorting_desc_disabled:before {
+    right: 1em;
+    content: "\2191";
+  }
+  table.dataTable thead .sorting:after,
+  table.dataTable thead .sorting_asc:after,
+  table.dataTable thead .sorting_desc:after,
+  table.dataTable thead .sorting_asc_disabled:after,
+  table.dataTable thead .sorting_desc_disabled:after {
+   left: 0.5em;
+   content: "\2193";
+  }
+  th{
+    cursor: pointer;
+  }
+</style>
+
+<!-- Full Screen Modal -->
+<style type="text/css">
+	.modal.modal-fullscreen .modal-dialog {
+		width: 100vw;
+		height: 100vh;
+		margin: 0;
+		padding: 0;
+		max-width: none; 
+	}
+
+	.modal.modal-fullscreen .modal-content {
+	  height: auto;
+	  height: 100vh;
+	  border-radius: 0;
+	  border: none; 
+	}
+
+	.modal.modal-fullscreen .modal-body {
+	  overflow-y: auto; 
+	}
+</style>
+<!-- Multi Select Css -->
+<!-- <link href="{% static 'multiselect/css/own-multi-select.css' %}" media="screen" rel="stylesheet" type="text/css"> -->
+<style type="text/css">
+	select {
+		padding: 0 10px;
+		margin: 0 0 10px;
+		border-radius: 0 0 4px 4px;
+		width: 280px;
+		height: 17.2em
+	}
+	select[multiple] {
+		height: auto;
+		min-height: 150px;
+	}
+
+	.add_all, .remove_all{
+		padding-top: 15px;
+		display: inline-block;
+		text-align: left;
+		margin: 1px auto 3px;
+		overflow: hidden;
+		font-weight: bold;
+		line-height: 16px;
+		color: #858796;
+		text-decoration: none;
+		/*opacity: 0.3;*/
+	}
+
+	.add_all:hover, .remove_all:hover{
+		color: #4e73df;
+		opacity: 0.3;
+	}
+
+	.add_all:active, .remove_all:active {
+		opacity: 1;
+	}
+
+	.box {
+		background-color: #eee;
+		border-radius: 10px;
+	}
+
+</style>
+
+
+          <!-- Content Row -->
+          <div class="row">
+			<!-- Content Column -->
+			<div class="col-lg-6 mb-4">
+
+			  <!-- Project Card Example -->
+			  <div class="card shadow mb-4">
+			    <div class="card-header py-3">
+			      
+			      <div class="d-flex justify-content-between">
+			        <div class="input-group p-2">
+			          <input type="text" class="form-control bg-light border-0 small m-0 font-weight-bold text-primary" value="Liste" aria-label="Liste" aria-describedby="basic-addon2" disabled="">
+			        </div>
+
+			        <div class="input-group p-2">
+			          <input type="text" class="form-control bg-light border-0 small" placeholder="Rechercher..." aria-label="Rechercher" aria-describedby="basic-addon2" id="myInput">
+			          <div class="input-group-append">
+			            <button class="btn btn-primary" type="button">
+			              <i class="fas fa-search fa-sm"></i>
+			            </button>
+			          </div>
+			        </div>
+
+			      </div>
+			    </div>
+			    <div class="card-body">
+					<div class="table-responsive">
+					    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+					      <thead>
+					        <tr>
+					          <th>Groupe</th>
+					          <th>Actions</th>
+					        </tr>
+					      </thead>
+					      <tfoot>
+					        <tr>
+					          <th>Groupe</th>
+					          <th>Actions</th>
+					        </tr>
+					      </tfoot>
+					      <tbody>
+					        {% for group in groups %}
+					        <tr>
+					          <td class="lib" contenteditable='true' id="{{group.id}}">{{group}}</td>
+					          <td style="text-align:center;">
+					            
+					            <a class="btn permissions btn-action" action="view" href="#" data-toggle="modal" data-target="#permission" id="{{group.id}}" name="{{group.name}}" title="Voir les permissions">
+					              <i class="fas fa-eye"></i>
+					          	</a>
+
+					            <!-- <a class="btn permissions btn-action" action="assign" href="#" data-toggle="modal" data-target="#assign" id="{{group.id}}" name="{{group.name}}" title="Assigner des utilisateurs">
+					              <i class="fas fa-tasks"></i>
+					          	</a> -->
+					            
+					            <a class="btn deleteGroup btn-action group" action="delete" href="#" data-toggle="modal" data-target="#deleteGroup" name="{{group.name}}" id="{{group.id}}" title="Supprimer">
+					              <i class="fas fa-minus-circle"></i>
+					            </a>
+					          </td>
+					        </tr>
+					        {% endfor %}
+					      </tbody>
+					    </table>
+					</div>
+
+			    </div>
+			  </div>
+
+			</div>
+			<!-- Content Column -->
+			<div class="col-lg-6 mb-4">
+
+			  <!-- Project Card Example -->
+			  <div class="card shadow mb-4">
+			    <div class="card-header py-3">
+			      <h6 class="m-0 font-weight-bold text-primary permissions" action=group>Permissions</h6>
+			    </div>
+			    <div class="card-body">
+			      <table class="table table-hover">
+			        <tbody class="permissions" action='list'>
+			          
+			        </tbody>
+			      </table>
+
+			      <hr>
+
+			        <div><a class="btn btn-primary btn-user btn-block permissions isDisabled" action="add" href="#" data-toggle="modal" data-target="#addPermission">
+			          <!-- <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i> -->
+			          Ajouter une permission
+			        </a></div>
+			    </div>
+			  </div>
+
+			</div>
+          </div>
+
+		<!-- Add Group Modal-->
+		<div class="modal fade" id="addGroup" tabindex="-1" role="dialog" aria-labelledby="" aria-hidden="true">
+			<div class="modal-dialog modal-lg" role="document">
+			  <div class="modal-content">
+			    <div class="modal-header">
+			      <h5 class="modal-title" id="modalLabel">Ajouter un groupe?</h5>
+			      <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+			        <span aria-hidden="true">×</span>
+			      </button>
+			    </div>
+			    <div class="modal-body text-center" id="modalContent">
+			    	<form method="POST" action="{% url 'createGroup' %}">{% csrf_token %}
+
+	                    <div class="form-group d-flex justify-content-center align-items-center">
+	                        <label class="col-sm-3" for="id_name">Nom du groupe:</label>
+	                        <input type="text" name="name" class="form-control col-sm-7" id="name" aria-describedby="nameHelp" placeholder="Nom du groupe..." style="">
+	                        <div class="co-md-2"></div>
+                        </div>
+
+	                    <hr>
+
+	                    <div class="form-group row">
+	                    	<div class="col-sm-5">
+	                    		<div class="card" style="width: 18rem;">
+	                    			<div class="card-header">
+										<h5 class="card-title">Permissions disponibles</h5>
+										<input type='text' class='search-input card-subtitle' autocomplete='off' placeholder='Commencer à taper...'>
+									</div>
+									<div class="card-body" id="to_select" style=" overflow: auto; height: 300px;">
+									</div>
+
+									<div class="card-footer text-muted text-center">
+										<a class='add_all text-primary' href='#' id='select-all'>Tout sélectionner<i class='fas fa-chevron-circle-right'></i></a>
+									</div>
+								</div>
+	                    	</div>
+
+	                    	<div class="col-sm-2 d-flex justify-content-center align-items-center">
+	                    		<div class="w-25 box">
+		                    		<i class='fas fa-arrow-circle-right'></i></a>
+		                    		<i class='fas fa-arrow-circle-left'></i></a>
+	                    		</div>
+	                    	</div>
+
+	                    	<div class="col-sm-5">
+	                    		<div class="card" style="width: 18rem;">
+	                    			<div class="card-header">
+										<h5 class="card-title">Permissions accordées</h5>
+										<input type='text' class='search-input card-subtitle' autocomplete='off' placeholder='Commencer à taper...'>
+									</div>
+									<div class="card-body" id="are_select" style=" overflow: auto; height: 300px;">
+									</div>
+
+									<div class="card-footer text-muted text-center">
+										<a class='remove_all text-primary' href='#' id='deselect-all'><i class= 'fas fa-chevron-circle-left'></i>Tout retirer</a>
+									</div>
+								</div>
+							</div>
+	                    </div>
+
+			            <!-- Multi Select -->
+			            <select multiple="searchable multiple" id="my-select" name="permissions">
+			            	{% for perm in perms %}
+							<option value='{{perm.id}}'>{{perm.name}}</option>
+							{% endfor %}
+					    </select>
+			                 
+			            <!-- #END# Multi Select -->
+
+			            <input type="submit" class="btn btn-primary btn-block" value="Créer">
+			    	</form>
+			    </div>
+			    <div class="modal-footer">
+			      <button class="btn btn-secondary" type="button" data-dismiss="modal">Annuler</button>
+			      <!-- <a class="btn btn-danger text-light" id="supprimer">Supprimer</a> -->
+			    </div>
+			  </div>
+			</div>
+		</div>
+
+		<!-- Add Permission to Group Modal-->
+		<div class="modal fade" id="addPermission" tabindex="-1" role="dialog" aria-labelledby="" aria-hidden="true">
+			<div class="modal-dialog modal-lg" role="document">
+			  <div class="modal-content">
+			    <div class="modal-header">
+			      <h5 class="modal-title" id="modalLabel">Définir les permissions du groupe?</h5>
+			      <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+			        <span aria-hidden="true">×</span>
+			      </button>
+			    </div>
+			    <div class="modal-body text-center" id="modalContent">
+			    	<form method="POST" id="addPermissionForm">
+
+	                    <div class="form-group d-flex justify-content-center align-items-center">
+	                        <label class="col-sm-3" for="id_name">Nom du groupe:</label>
+	                        <input type="text" name="name" class="form-control col-sm-7" id="name" aria-describedby="nameHelp" placeholder="Nom du groupe...">
+	                        <div class="co-md-2"></div>
+                        </div>
+
+	                    <hr>
+
+	                    <div class="form-group row">
+	                    	<div class="col-sm-5">
+	                    		<div class="card" style="width: 18rem;">
+	                    			<div class="card-header">
+										<h5 class="card-title">Permissions disponibles</h5>
+										<input type='text' class='search-input card-subtitle' autocomplete='off' placeholder='Commencer à taper...'>
+									</div>
+									<div class="card-body" id="to_select2" style=" overflow: auto; height: 300px;">
+									</div>
+
+									<div class="card-footer text-muted text-center">
+										<a class='add_all text-primary' href='#' id='select-all2'>Tout sélectionner<i class='fas fa-chevron-circle-right'></i></a>
+									</div>
+								</div>
+	                    	</div>
+
+	                    	<div class="col-sm-2 d-flex justify-content-center align-items-center">
+	                    		<div class="w-25 box">
+		                    		<i class='fas fa-arrow-circle-right'></i></a>
+		                    		<i class='fas fa-arrow-circle-left'></i></a>
+	                    		</div>
+	                    	</div>
+
+	                    	<div class="col-sm-5">
+	                    		<div class="card" style="width: 18rem;">
+	                    			<div class="card-header">
+										<h5 class="card-title">Permissions accordées</h5>
+										<input type='text' class='search-input card-subtitle' autocomplete='off' placeholder='Commencer à taper...'>
+									</div>
+									<div class="card-body" id="are_select2" style=" overflow: auto; height: 300px;">
+									</div>
+
+									<div class="card-footer text-muted text-center">
+										<a class='remove_all text-primary' href='#' id='deselect-all2'><i class= 'fas fa-chevron-circle-left'></i>Tout retirer</a>
+									</div>
+								</div>
+							</div>
+	                    </div>
+
+			            <!-- Multi Select -->
+			            <select multiple="searchable multiple" id="my-select2" name="permissions">
+			            	
+					    </select>
+			                 
+			            <!-- #END# Multi Select -->
+
+			            <input type="submit" class="btn btn-primary btn-block" value="Enreigistrer">
+			    	</form>
+			    </div>
+			    <div class="modal-footer">
+			      <button class="btn btn-secondary" type="button" data-dismiss="modal">Annuler</button>
+			      <!-- <a class="btn btn-danger text-light" id="supprimer">Supprimer</a> -->
+			    </div>
+			  </div>
+			</div>
+		</div>
+
+		<!-- Delete Group Modal-->
+		<div class="modal fade" id="deleteGroup" tabindex="-1" role="dialog" aria-labelledby="deleteTypeLabel" aria-hidden="true">
+			<div class="modal-dialog" role="document">
+			  <div class="modal-content">
+			    <div class="modal-header">
+			      <h5 class="modal-title" id="deleteGroupeLabel">Supprimer le groupe?</h5>
+			      <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+			        <span aria-hidden="true">×</span>
+			      </button>
+			    </div>
+			    <div class="modal-body" id="delete"></div>
+			    <div class="modal-footer">
+			      <button class="btn btn-secondary" type="button" data-dismiss="modal">Annuler</button>
+			      <a class="btn btn-danger text-light" id="supprimer">Supprimer</a>
+			    </div>
+			  </div>
+			</div>
+		</div>
+{% endblock %}
+
+{% block js %}
+  <!-- Bootstrap core JavaScript-->
+  <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
+  <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+
+  <!-- Core plugin JavaScript-->
+  <script src="{% static 'vendor/jquery-easing/jquery.easing.min.js' %}"></script>
+
+  <!-- Custom scripts for all pages-->
+  <script src="{% static 'js/sb-admin-2.min.js' %}"></script>
+
+  <!-- Page level plugins -->
+  <script src="{% static 'vendor/datatables/jquery.dataTables.min.js' %}"></script>
+  <script src="{% static 'vendor/datatables/dataTables.bootstrap4.min.js' %}"></script> 
+<!-- Data table -->
+<script type="text/javascript">
+	$(document).ready(function() {
+	  var table = $('#dataTable').DataTable({
+	    responsive: true,
+	    "bPaginate": true,
+	    "bLengthChange": false,
+	    dom: 'lBfrtip',
+	    buttons: [
+	      'copy', 'csv', 'excel', 'pdf', 'print'
+	    ],
+	    "pagingType": "full_numbers"
+	  });
+
+	  $('#myInput').on( 'keyup', function () {
+	    table.search( this.value ).draw();
+	  });
+
+	});
+</script>
+
+<!-- Multi Select Plugin Js -->
+<script src="{% static 'multiselect/js/jquery.multi-select.js' %}" type="text/javascript"></script>
+<script src="{% static 'quicksearch/jquery.quicksearch.js' %}" type="text/javascript"></script>
+<script type="text/javascript">
+	$('#my-select').multiSelect({
+		// selectableHeader: `
+		// 	<div class='custom-header'>Permissions disponibles</div>
+		// 	<input type='text' class='search-input' autocomplete='off' placeholder='try \"12\"'>
+		// `,
+		// selectionHeader: `
+		// 	<div class='custom-header'>Permissions accordées</div>
+		// 	<input type='text' class='search-input' autocomplete='off' placeholder='try \"4\"'>
+		// `,
+
+		// selectableFooter: "<a class='add_all text-primary' href='#' id='select-all'>Tout sélectionner<i class='fas fa-chevron-circle-right'></i></a>",
+		// selectionFooter: "<a class='remove_all text-primary' href='#' id='deselect-all'><i class= 'fas fa-chevron-circle-left'></i>Tout retirer</a>",
+		keepOrder: true,
+		afterInit: function(ms){
+		var that = this,
+		    $selectableSearch = that.$selectableUl.prev(),
+		    $selectionSearch = that.$selectionUl.prev(),
+		    selectableSearchString = '#'+that.$container.attr('id')+' .ms-elem-selectable:not(.ms-selected)',
+		    selectionSearchString = '#'+that.$container.attr('id')+' .ms-elem-selection.ms-selected';
+
+			that.qs1 = $selectableSearch.quicksearch(selectableSearchString)
+			.on('keydown', function(e){
+				if (e.which === 40){
+					that.$selectableUl.focus();
+					return false;
+				}
+			});
+
+			that.qs2 = $selectionSearch.quicksearch(selectionSearchString)
+			.on('keydown', function(e){
+				if (e.which == 40){
+					that.$selectionUl.focus();
+					return false;
+		  		}
+			});
+		},
+		afterSelect: function(){
+			this.qs1.cache();
+			this.qs2.cache();
+		},
+		afterDeselect: function(){
+			this.qs1.cache();
+			this.qs2.cache();
+		}
+	});
+
+	$('#select-all').click(function(){
+		$('#my-select').multiSelect('select_all');
+		return false;
+	});
+	$('#deselect-all').click(function(){
+		$('#my-select').multiSelect('deselect_all');
+		return false;
+	});
+	$('#add-option').on('click', function(){
+		$('#my-select').multiSelect('addOption', { value: 42, text: 'test 42', index: 0 });
+		return false;
+	});
+
+</script>
+
+
+<!-- Page level custom scripts -->
+<script type="text/javascript">
+    $('.lib').on('keyup',function() {
+        clearTimeout($.data(this, 'timer'));
+        // console.log($(this).text())
+        var wait = setTimeout(saveData($(this).attr('id'), $(this).text()), 500); // delay after user types
+        $(this).data('timer', wait);
+    });
+
+    //ToDo
+	$('.group[action=delete]').on('click', function() {
+    	id = $(this).attr('id');
+		name = $(this).attr('name');
+	 	$('.modal-body[id=delete]').html("Cliquez sur Supprimer si vous êtes sûr de bien vouloir supprimer le groupe <strong>"+ name +"</strong>.");
+    	$('#supprimer').on('click', function() {
+	        var url = "{% url 'destroyGroup' 1 %}".replace('1', id);
+	        $('#supprimer').attr('href', url);
+	    })
+    });
+
+    // $('.deleteType').on('click', function() {
+    //     id = $(this).attr('id');
+    //     name = $(this).attr('name');
+    //     $('#modalContent').html("Cliquez sur Supprimer si vous êtes sûr de bien vouloir supprimer le type <strong>"+ name +"</strong>.");
+    //     $('#supprimer').on('click', function() {
+    //         var url = "{% url 'destroyType' 1 %}".replace('1', id);
+    //         $('#supprimer').attr('href', url);
+    //     })
+    // })
+
+    // Print group permission on btn click
+    $(".permissions[action='view']").on('click', function() {
+
+    	$(".permissions[action='add']").attr("data-toggle", 'modal');
+    	$(".permissions[action='add']").removeClass("isDisabled");
+    	// alert($(this).attr('id'));
+    	$(".permissions[action='list']").html('');
+    	$(".permissions[action='group']").html('Permissions');
+    	{% for group in groups %}
+    		var group_id = "{{group.id}}"
+    		if (group_id == $(this).attr('id')) {
+    			$(".permissions[action='group']").append(` du groupe {{group}}`)
+    			{% for perm in group|perms_list %}
+    				$(".permissions[action='list']").append(`
+	    					<tr>
+	                        <td>{{perm}}</td>
+	                        <td>
+	                          <a class="permissions btn-action" action="delete" id="{{perm.id}}" name="{{perm}}" group="{{group.id}}" href="#" onclick="permissions_rmv({{group.id}},{{perm.id}});">
+	                            <i class="fas fa-minus-circle" title="Retirer la permission"></i>
+	                          </a>
+	                        </td>
+	                      </tr>
+    					`)
+
+    				$(".permissions[action='add']").attr('id', "{{group.id}}");
+    				$(".permissions[action='add']").attr('name', "{{group.name}}");
+    			{% empty %}
+					$(".permissions[action='list']").append(`Aucune permission assignée à ce groupe`);
+
+					$(".permissions[action='add']").attr('id', "{{group.id}}");
+					$(".permissions[action='add']").attr('name', "{{group.name}}");
+    			{% endfor %}
+    		}
+
+		{% endfor %}
+    })
+
+    // Remove permission from group
+    function permissions_rmv(group, perm) {
+    	// alert(perm);
+		var url = "{% url 'rmvPerm' 'group_id' 'perm_id' %}"
+		.replace('group_id', group)
+      	.replace('perm_id',  perm);
+		location.href = url;
+    }
+
+    // Moove selected div
+    $(document).ready(function() {
+    	$('.ms-selectable').appendTo('#to_select');
+    	$('.ms-selection').appendTo('#are_select');
+    	$('.ms-list').addClass('list-group list-group-flush');
+    	$('.ms-elem-selectable').addClass('list-group-item');
+    	$('.ms-elem-selection').addClass('list-group-item');
+
+    	$(".permissions[action='add']").removeAttr("data-toggle");
+    });
+
+    //Add Permission
+    $(".permissions[action='add'][data-toggle='modal']").on('click', function() {
+
+    	id = $(this).attr('id');
+    	url =  action="{% url 'updateGroup' 1 %}".replace('1', id);
+
+    	$('#addPermissionForm').attr('action', url);
+    	$('#addPermissionForm').html(`
+    				{% csrf_token %}
+
+	                    <div class="form-group d-flex justify-content-center align-items-center">
+	                        <label class="col-sm-3" for="id_name">Nom du groupe:</label>
+	                        <input type="text" name="name" class="form-control col-sm-7" id="name" aria-describedby="nameHelp" placeholder="Nom du groupe...">
+	                        <div class="co-md-2"></div>
+                        </div>
+
+	                    <hr>
+
+	                    <div class="form-group row">
+	                    	<div class="col-sm-5">
+	                    		<div class="card" style="width: 18rem;">
+	                    			<div class="card-header">
+										<h5 class="card-title">Permissions disponibles</h5>
+										<input type='text' class='search-input card-subtitle' autocomplete='off' placeholder='Commencer à taper...'>
+									</div>
+									<div class="card-body" id="to_select2" style=" overflow: auto; height: 300px;">
+									</div>
+
+									<div class="card-footer text-muted text-center">
+										<a class='add_all text-primary' href='#' id='select-all2'>Tout sélectionner<i class='fas fa-chevron-circle-right'></i></a>
+									</div>
+								</div>
+	                    	</div>
+
+	                    	<div class="col-sm-2 d-flex justify-content-center align-items-center">
+	                    		<div class="w-25 box">
+		                    		<i class='fas fa-arrow-circle-right'></i></a>
+		                    		<i class='fas fa-arrow-circle-left'></i></a>
+	                    		</div>
+	                    	</div>
+
+	                    	<div class="col-sm-5">
+	                    		<div class="card" style="width: 18rem;">
+	                    			<div class="card-header">
+										<h5 class="card-title">Permissions accordées</h5>
+										<input type='text' class='search-input card-subtitle' autocomplete='off' placeholder='Commencer à taper...'>
+									</div>
+									<div class="card-body" id="are_select2" style=" overflow: auto; height: 300px;">
+									</div>
+
+									<div class="card-footer text-muted text-center">
+										<a class='remove_all text-primary' href='#' id='deselect-all2'><i class= 'fas fa-chevron-circle-left'></i>Tout retirer</a>
+									</div>
+								</div>
+							</div>
+	                    </div>
+
+			            <!-- Multi Select -->
+			            <select multiple="searchable multiple" id="my-select2" name="permissions">
+			            	
+					    </select>
+			                 
+			            <!-- #END# Multi Select -->
+
+			            <input type="submit" class="btn btn-primary btn-block" value="Enreigistrer">
+    	`);
+
+    	$("#addPermission").find("#name").attr('value', $(this).attr('name'));
+    	
+    	{% for perm in perms %}
+	    	{% for group in groups %}
+	    		var group_id = "{{group.id}}"
+	    		if (group_id == $(this).attr('id')) {
+
+			    	{% if perm in group|perms_list %}
+				    	$('#my-select2').append(`
+							<option value='{{perm.id}}' id="{{perm.id}}" selected>{{perm.name}}</option>
+				    	`);
+				    {% else %}
+				    	$('#my-select2').append(`
+							<option value='{{perm.id}}' id="{{perm.id}}">{{perm.name}}</option>
+				    	`);
+					{% endif %}
+				}
+
+			{% endfor %}
+		{% endfor %}
+
+		$('#my-select2').multiSelect({
+			// selectableHeader: `
+			// 	<div class='custom-header'>Permissions disponibles</div>
+			// 	<input type='text' class='search-input' autocomplete='off' placeholder='try \"12\"'>
+			// `,
+			// selectionHeader: `
+			// 	<div class='custom-header'>Permissions accordées</div>
+			// 	<input type='text' class='search-input' autocomplete='off' placeholder='try \"4\"'>
+			// `,
+
+			// selectableFooter: "<a class='add_all text-primary' href='#' id='select-all'>Tout sélectionner<i class='fas fa-chevron-circle-right'></i></a>",
+			// selectionFooter: "<a class='remove_all text-primary' href='#' id='deselect-all'><i class= 'fas fa-chevron-circle-left'></i>Tout retirer</a>",
+			keepOrder: true,
+			afterInit: function(ms){
+			var that = this,
+			    $selectableSearch = that.$selectableUl.prev(),
+			    $selectionSearch = that.$selectionUl.prev(),
+			    selectableSearchString = '#'+that.$container.attr('id')+' .ms-elem-selectable:not(.ms-selected)',
+			    selectionSearchString = '#'+that.$container.attr('id')+' .ms-elem-selection.ms-selected';
+
+				that.qs1 = $selectableSearch.quicksearch(selectableSearchString)
+				.on('keydown', function(e){
+					if (e.which === 40){
+						that.$selectableUl.focus();
+						return false;
+					}
+				});
+
+				that.qs2 = $selectionSearch.quicksearch(selectionSearchString)
+				.on('keydown', function(e){
+					if (e.which == 40){
+						that.$selectionUl.focus();
+						return false;
+			  		}
+				});
+			},
+			afterSelect: function(){
+				this.qs1.cache();
+				this.qs2.cache();
+			},
+			afterDeselect: function(){
+				this.qs1.cache();
+				this.qs2.cache();
+			}
+		});
+
+		$('#select-all2').click(function(){
+			$('#my-select2').multiSelect('select_all');
+			return false;
+		});
+		$('#deselect-all2').click(function(){
+			$('#my-select2').multiSelect('deselect_all');
+			return false;
+		});
+		$('#add-option2').on('click', function(){
+			$('#my-select2').multiSelect('addOption', { value: 42, text: 'test 42', index: 0 });
+			return false;
+		});
+
+    	$('#addPermissionForm').find('.ms-selectable').appendTo('#to_select2');
+    	$('#addPermissionForm').find('.ms-selection').appendTo('#are_select2');
+    	$('#addPermissionForm').find('.ms-list').addClass('list-group list-group-flush');
+    	$('#addPermissionForm').find('.ms-elem-selectable').addClass('list-group-item');
+    	$('#addPermissionForm').find('.ms-elem-selection').addClass('list-group-item');
+
+    });
+
+	// Assign users
+</script>
+{% endblock %}
+

@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Update</title>
+</head>
+<body>
+	<form method="POST" action="">{% csrf_token %}
+		{{form}}
+		<input class="btn login_btn" type="submit" value="Register Account">
+	</form>
+	{{form.errors}}
+</body>
+</html>

@@ -1,0 +1,242 @@
+{% extends 'old/base.html' %}
+{% load static %}
+{% load user_tags %}
+{% load i18n %}
+
+{% block pageTitle %}
+  Types de projet
+{% endblock %}
+
+{% block pageContent %}
+
+{% if trash %}
+  <link href="{% static 'css/trash.css' %}" rel="stylesheet">
+{% endif %}
+
+<!-- JQuery DataTable Css -->
+<style type="text/css">
+  .dataTables_filter, .dataTables_info { display: none; }
+  table.dataTable thead .sorting:before,
+  table.dataTable thead .sorting_asc:before,
+  table.dataTable thead .sorting_desc:before,
+  table.dataTable thead .sorting_asc_disabled:before,
+  table.dataTable thead .sorting_desc_disabled:before {
+    right: 1em;
+    content: "\2191";
+  }
+  table.dataTable thead .sorting:after,
+  table.dataTable thead .sorting_asc:after,
+  table.dataTable thead .sorting_desc:after,
+  table.dataTable thead .sorting_asc_disabled:after,
+  table.dataTable thead .sorting_desc_disabled:after {
+   left: 0.5em;
+   content: "\2193";
+  }
+  th{
+    cursor: pointer;
+  }
+</style>
+
+          <!-- Content Row -->
+          <div class="row">
+
+            <!-- Content Column -->
+            <div class="col-lg-6 mb-4">
+
+              <!-- Project Card Example -->
+              <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                  
+                  <div class="d-flex justify-content-between">
+                    <div class="input-group p-2">
+                      <input type="text" class="form-control bg-light border-0 small m-0 font-weight-bold text-primary" value="Liste" aria-label="Liste" aria-describedby="basic-addon2" disabled="">
+                    </div>
+
+                    <div class="input-group p-2">
+                      <input type="text" class="form-control bg-light border-0 small" placeholder="Rechercher..." aria-label="Rechercher" aria-describedby="basic-addon2" id="myInput">
+                      <div class="input-group-append">
+                        <button class="btn btn-primary" type="button">
+                          <i class="fas fa-search fa-sm"></i>
+                        </button>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+                <div class="card-body">
+              <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                  <thead>
+                    <tr>
+                      <th>Libellé</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tfoot>
+                    <tr>
+                      <th>Libellé</th>
+                      <th>Actions</th>
+                    </tr>
+                  </tfoot>
+                  <tbody>
+                    {% for type in types %}
+                    <tr>
+                      <td class="lib" id="{{type.id}}">{{type.libelle}}</td>
+                      <td style="text-align:center;">
+                        <a href="#" class="btn btn-action" action="edit" title="Renommer">
+                          <i class="fas fa-pencil-alt"></i>
+                        </a>
+                        <a href="{% url 'obj_history' classe='type' pk=type.id %}" class="btn btn-action" action="view" title="Historique">
+                          <i class="fas fa-history"></i>
+                        </a>
+                        
+                        <a class="btn btn-action deleteType" action="delete" href="#" data-toggle="modal" data-target="#deleteType" name="{{type.libelle}}" id="{{type.id}}"title="Supprimer">
+                          <i class="fas fa-minus-circle"></i>
+                        </a>
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+
+                </div>
+              </div>
+
+            </div>
+            <!-- Content Column -->
+            <div class="col-lg-6 mb-4">
+
+              <!-- Project Card Example -->
+              <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                  <h6 class="m-0 font-weight-bold text-primary">Nouveau</h6>
+                </div>
+                <div class="card-body">
+                  <form class="form-horizontal form-material" method="POST" action="{% url 'createType' %}">{% csrf_token %}
+                      <div class="form-group">
+                          <label for="example-libelle" class="col-md-12">Titre</label>
+                          <div class="col-md-12">
+                              <input type="text" placeholder="Nouveau type" class="form-control form-control-line" name="libelle" id="example-libelle">
+                          </div>
+                      </div>
+                      <hr>
+                      <input type="submit" class="btn btn-primary btn-user btn-block" value="Ajouter">
+                    </form>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+
+  <!-- Delete Team Modal-->
+  <div class="modal fade" id="deleteType" tabindex="-1" role="dialog" aria-labelledby="deleteTypeLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="deleteTypeLabel">Supprimer le type?</h5>
+          <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">×</span>
+          </button>
+        </div>
+        <div class="modal-body" id="modalContent"></div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" type="button" data-dismiss="modal">Annuler</button>
+          <a class="btn btn-danger text-light" id="supprimer">Supprimer</a>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block js %}
+  <!-- Bootstrap core JavaScript-->
+  <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
+  <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+
+  <!-- Core plugin JavaScript-->
+  <script src="{% static 'vendor/jquery-easing/jquery.easing.min.js' %}"></script>
+
+  <!-- Custom scripts for all pages-->
+  <script src="{% static 'js/sb-admin-2.min.js' %}"></script>
+
+  <!-- Page level plugins -->
+  <script src="{% static 'vendor/datatables/jquery.dataTables.min.js' %}"></script>
+  <script src="{% static 'vendor/datatables/dataTables.bootstrap4.min.js' %}"></script>  <!-- Page level custom scripts -->
+  <script type="text/javascript">
+    $(document).ready(function() {
+      var table = $('#dataTable').DataTable({
+        responsive: true,
+        "bPaginate": true,
+        "bLengthChange": false,
+        dom: 'lBfrtip',
+        buttons: [
+          'copy', 'csv', 'excel', 'pdf', 'print'
+        ],
+        "pagingType": "full_numbers"
+      });
+
+      $('#myInput').on( 'keyup', function () {
+        table.search( this.value ).draw();
+      });
+
+    });
+
+  </script>
+
+  <script type="text/javascript">
+    // $('tr').on('click', ".btn[action='edit']", function() {
+    //   console.log($(this));
+    //   console.log($(this).children().first().attr('id'));
+    // });
+
+    $(".btn[action='edit']").on('click', function() {
+      $(this).closest('td').prev().attr('contenteditable', 'true');
+    })
+
+    $(".lib").on('keyup',function() {
+      alert('Modification en cours');
+        clearTimeout($.data(this, 'timer'));
+        console.log($(this).text())
+        var wait = setTimeout(saveData($(this).attr('id'), $(this).text()), 500); // delay after user types
+        $(this).data('timer', wait);
+    });
+
+
+    function saveData(id, libelle) {
+      var url = "{% url 'updateType' 1 %}".replace('1', id);
+      
+      var form = $(document.createElement('form'));
+      $(form).attr("action", url);
+      $(form).attr("method", "POST");
+
+      var input = $("<input>")
+          .attr("type", "hidden")
+          .attr("name", "libelle")
+          .val(libelle);
+
+      $(form).append([
+        '{% csrf_token %}',
+        $(input)
+        ]);
+      console.log($(input))
+      console.log($(form))
+
+      form.appendTo( document.body )
+
+      $(form).submit();
+    }
+
+    $('.deleteType').on('click', function() {
+        id = $(this).attr('id');
+        name = $(this).attr('name');
+        $('#modalContent').html("Cliquez sur Supprimer si vous êtes sûr de bien vouloir supprimer le type <strong>"+ name +"</strong>.");
+        $('#supprimer').on('click', function() {
+            var url = "{% url 'destroyType' 1 %}".replace('1', id);
+            $('#supprimer').attr('href', url);
+        })
+    })
+  </script>
+{% endblock %}
+

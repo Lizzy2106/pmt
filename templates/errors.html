@@ -1,0 +1,14 @@
+{% extends 'old/base.html' %}
+{% block pageTitle %}{% endblock %}
+{% block pageContent %}
+
+  <!-- {{code}} Error Text -->
+  <div class="text-center">
+    <div class="error mx-auto" data-text="{{code}}">{{code}}</div>
+    <p class="lead text-gray-800 mb-5">{{error}}</p>
+    <p class="text-gray-500 mb-0">Il semble que vous ayez trouvé une erreur dans la matrice...</p>
+    <!-- <p class="text-gray-500 mb-0">Comment</p> -->
+    <a href="{% url 'home' %}">&larr; Retourner à l'acceuil</a>
+  </div>
+
+{% endblock %}

@@ -1,0 +1,158 @@
+{% extends 'old/base.html' %}
+{% load static %}
+{% load user_tags %}
+{% load getattribute %}
+{% load i18n %}
+
+{% block pageTitle %}
+Modification du
+{% language 'fr' %}
+  {{date|date:'D, d M Y, H:i:s '|default_if_none:"" }}
+{% endlanguage %}
+{% endblock %}
+
+{% block pageContent %}
+
+{% if delete %}
+<style type="text/css">
+    #wrapper #content-wrapper {
+    /*background-color: red;*/
+    }
+    .btn-primary {
+        color: #fff;
+        background-color: #e74a3b;
+        border-color: #e74a3b;
+    }
+    .bg-gradient-primary {
+        background-color: #e74a3b;
+        background-image: linear-gradient(180deg,#e74a3b 10%,#ff7c66 100%);
+        background-size: cover;
+    }
+    .text-primary {
+      color: #e74a3b !important;
+    }
+</style>
+{% endif %}
+
+          <!-- Content Row -->
+          <div class="row">
+            <!-- Content Column -->
+            <div class="col-lg-2"></div>
+
+            <!-- Content Column -->
+            <div class="col-lg-8 mb-4">
+
+              <!-- Project Card Example -->
+              <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between">
+                  <h6 class="m-0 font-weight-bold text-primary p-2">
+                    {% language 'fr' %}
+                      {{date|date:'D, d M Y, H:i:s '|default_if_none:"" }}
+                    {% endlanguage %}
+                  </h6>
+                  <h6 class="m-0 font-weight-bold text-primary p-2">{{action}}</h6>
+                </div>
+                <div class="card-body">
+
+                  <table class="table">
+                    <caption>Historique</caption>
+                    {% if update %}
+                    <thead>
+                      <tr>
+                        <th scope="col"></th>
+                        <th class="table-danger" scope="col">Ancienne valeur</th>
+                        <th scope="col">Nouvelle valeur</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for attr in attributes %}
+                      <tr>
+                        <th scope="row">{{attr}}</th>
+                        <td class="table-danger">{{ old|getattribute:attr|default_if_none:"-" }}</td>
+                        <td>{{ value|getattribute:attr|default_if_none:"-" }}</td>
+                      </tr>
+                      {% endfor %}
+                    </tbody>
+                    {% else %}
+                    <thead>
+                      <tr>
+                        <th scope="col"></th>
+                        <th scope="col">Valeur</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for attr in attributes %}
+                      <tr>
+                        <th scope="row">{{attr}}</th>
+                        <td>{{ old|getattribute:attr|default_if_none:"-" }}</td>
+                      </tr>
+                      {% endfor %}
+                    </tbody>
+                    {% endif %}
+                  </table>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Content Column -->
+            <div class="col-lg-2"></div>
+
+          </div>
+
+  <!-- Add Team Member Modal-->
+  <div class="modal fade" id="deleteType" tabindex="-1" role="dialog" aria-labelledby="deleteTypeLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="deleteTypeLabel">Supprimer le typa?</h5>
+          <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">×</span>
+          </button>
+        </div>
+        <div class="modal-body" id="modalContent"></div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" type="button" data-dismiss="modal">Annuler</button>
+          <a class="btn btn-danger" id="supprimer">Supprimer</a>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block js %}
+  <!-- Bootstrap core JavaScript-->
+  <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
+  <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+
+  <!-- Core plugin JavaScript-->
+  <script src="{% static 'vendor/jquery-easing/jquery.easing.min.js' %}"></script>
+
+  <!-- Custom scripts for all pages-->
+  <script src="{% static 'js/sb-admin-2.min.js' %}"></script>
+
+  <!-- Page level plugins -->
+  <script src="{% static 'vendor/datatables/jquery.dataTables.min.js' %}"></script>
+  <script src="{% static 'vendor/datatables/dataTables.bootstrap4.min.js' %}"></script>  <!-- Page level custom scripts -->
+  <script type="text/javascript">
+    $(document).ready(function() {
+      var table = $('#dataTable').DataTable({
+        responsive: true,
+        "bPaginate": false,
+        "bLengthChange": false,
+        dom: 'lBfrtip',
+        buttons: [
+          'copy', 'csv', 'excel', 'pdf', 'print'
+        ],
+        "pagingType": "full_numbers"
+      });
+
+      $('#myInput').on( 'keyup', function () {
+        table.search( this.value ).draw();
+      });
+
+    });
+
+  </script>
+{% endblock %}
+

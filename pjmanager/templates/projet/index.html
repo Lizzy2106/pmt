@@ -1,0 +1,227 @@
+{% extends 'old/base.html' %}
+{% load static %}
+{% load i18n %}
+{% block pageTitle %}Projets{% endblock %}
+{% block pageContent %}
+
+{% if trash %}
+  <link href="{% static 'css/trash.css' %}" rel="stylesheet">
+{% endif %}
+
+
+<!-- JQuery DataTable Css -->
+<style type="text/css">
+  .dataTables_filter, .dataTables_info { display: none; }
+  table.dataTable thead .sorting:before,
+  table.dataTable thead .sorting_asc:before,
+  table.dataTable thead .sorting_desc:before,
+  table.dataTable thead .sorting_asc_disabled:before,
+  table.dataTable thead .sorting_desc_disabled:before {
+    right: 1em;
+    content: "\2191";
+  }
+  table.dataTable thead .sorting:after,
+  table.dataTable thead .sorting_asc:after,
+  table.dataTable thead .sorting_desc:after,
+  table.dataTable thead .sorting_asc_disabled:after,
+  table.dataTable thead .sorting_desc_disabled:after {
+   left: 0.5em;
+   content: "\2193";
+  }
+  th{
+    cursor: pointer;
+  }
+</style>
+
+          <!-- DataTales Example -->
+          <div class="card shadow mb-4">
+            <div class="card-header py-3">
+
+              <div class="d-flex justify-content-between">
+                <div class="input-group p-2">
+                  <input type="text" class="form-control bg-light border-0 small" placeholder="Rechercher..." aria-label="Rechercher" aria-describedby="basic-addon2" id="myInput">
+                  <div class="input-group-append">
+                    <button class="btn btn-primary" type="button">
+                      <i class="fas fa-search fa-sm"></i>
+                    </button>
+                  </div>
+
+                </div>
+
+                <!-- <div class="input-group p-2">
+                  <input type="number" class="form-control bg-light border-0 small" placeholder="Entry" aria-label="Search" aria-describedby="basic-addon2">
+                </div> -->
+              </div>
+
+            </div>
+
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                  <thead>
+                    <tr>
+                      <th>Titre</th>
+                      <th>Description</th>
+                      <th>Type</th>
+                      <th>Statut</th>
+                      <th>Date de creation</th>
+                      <th>Date de debut</th>
+                      <th>Date de fin</th>
+                      <th>Validé</th>
+                      <th>Satisfaisant</th>
+                      {% if trash %}
+                      <th>Supprimé le</th>
+                      <th>Supprimé par</th>
+                      {% endif %}
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tfoot>
+                    <tr>
+                      <th>Titre</th>
+                      <th>description</th>
+                      <th>Type</th>
+                      <th>Statut</th>
+                      <th>Date de creation</th>
+                      <th>Date de debut</th>
+                      <th>Date de fin</th>
+                      <th>Validé</th>
+                      <th>Satisfaisant</th>
+                      {% if trash %}
+                      <th>Supprimé le</th>
+                      <th>Supprimé par</th>
+                      {% endif %}
+                      <th>Actions</th>
+                    </tr>
+                  </tfoot>
+                  <tbody>
+                    {% for projet in projets %}
+                    <tr>
+                      <td>{{projet.titre}}</td>
+                      <td>{{projet.description|truncatechars:50}}</td>
+                      <td>{{projet.type.libelle}}</td>
+                      <td>{{projet.statut|yesno:"Terminé, En cours"}}</td>
+                      <td>
+                        {% language 'fr' %}
+                          {{ projet.date_creation|date:'D, d M Y H:i:s e'|default_if_none:"-" }}
+                        {% endlanguage %}
+                      </td>
+                      <td>
+                        {% language 'fr' %}
+                          {{ projet.date_debut|date:'D, d M Y H:i:s e'|default_if_none:"-" }}
+                        {% endlanguage %}
+                      </td>
+                      <td>
+                        {% language 'fr' %}
+                          {{ projet.date_fin|date:'D, d M Y H:i:s e'|default_if_none:"-" }}
+                        {% endlanguage %}
+                      </td>
+                      <td>{{projet.estvalide|yesno:"Oui, Non"}}</td>
+                      <td>{{projet.estsatisfaisant|yesno:"Oui, Non"}}</td>
+                      {% if trash %}
+                      <td>
+                        {% language 'fr' %}
+                          {{ projet.log.first.history_date|date:'D, d M Y H:i:s e'|default_if_none:"" }}
+                        {% endlanguage %}
+                      </td>
+                      <td>{{projet.log.first.history_user|default_if_none:"-" }}</td>
+                      {% endif %}
+                      <td>
+                        {% if not trash %}
+                        <a href="{% url 'showProjet' projet.id %}" class="btn btn-facebook btn-block">Voir</a>
+                        <a  class="btn btn-google btn-block deleteProjet" href="#" data-toggle="modal" data-target="#deleteProjet" name="{{projet.titre}}" id="{{projet.id}}" title="Supprimer">Supprimer</a>
+                        <!-- <a href="{% url 'destroyProjet' projet.id %}">Supprimer</a> -->
+                        {% else %}
+                        <a href="{% url 'showProjet' projet.id %}" class="btn btn-facebook btn-block">Voir</a>
+                        {% endif %}
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+<!-- Add Team Member Modal-->
+  <div class="modal fade" id="deleteProjet" tabindex="-1" role="dialog" aria-labelledby="deleteProjetLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="deleteTypeLabel">Supprimer le projet?</h5>
+          <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">×</span>
+          </button>
+        </div>
+        <div class="modal-body" id="modalContent"></div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" type="button" data-dismiss="modal">Annuler</button>
+          <a class="btn btn-danger text-light" id="supprimer">Supprimer</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Page level plugins -->
+    <!-- <script src="{% static 'vendor/datatables/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'vendor/datatables/dataTables.bootstrap4.min.js' %}"></script> -->
+    <!-- Jquery DataTable Plugin Js -->
+    <!-- <script src="{% static 'jquery-datatable/jquery.dataTables.js' %}"></script>
+    <script src="{% static 'jquery-datatable/skin/bootstrap/js/dataTables.bootstrap.js' %}"></script>
+    <script src="{% static 'jquery-datatable/extensions/export/dataTables.buttons.min.js' %}"></script>
+    <script src="{% static 'jquery-datatable/extensions/export/buttons.flash.min.js' %}"></script>
+    <script src="{% static 'jquery-datatable/extensions/export/jszip.min.js' %}"></script>
+    <script src="{% static 'jquery-datatable/extensions/export/pdfmake.min.js' %}"></script>
+    <script src="{% static 'jquery-datatable/extensions/export/vfs_fonts.js' %}"></script>
+    <script src="{% static 'jquery-datatable/extensions/export/buttons.html5.min.js' %}"></script>
+    <script src="{% static 'jquery-datatable/extensions/export/buttons.print.min.js' %}"></script> -->
+
+
+{% endblock %}
+
+{% block js %}
+  <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
+  <!-- Bootstrap core JavaScript-->
+  <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
+  <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+
+  <!-- Core plugin JavaScript-->
+  <script src="{% static 'vendor/jquery-easing/jquery.easing.min.js' %}"></script>
+
+  <!-- Custom scripts for all pages-->
+  <script src="{% static 'js/sb-admin-2.min.js' %}"></script>
+
+  <!-- Page level plugins -->
+  <script src="{% static 'vendor/datatables/jquery.dataTables.min.js' %}"></script>
+  <script src="{% static 'vendor/datatables/dataTables.bootstrap4.min.js' %}"></script>  <!-- Page level custom scripts -->
+  <script type="text/javascript">
+    $(document).ready(function() {
+      var table = $('#dataTable').DataTable({
+        responsive: true,
+        "bPaginate": true,
+        "order": [],
+        "bLengthChange": false,
+        dom: 'lBfrtip',
+        buttons: [
+          'copy', 'csv', 'excel', 'pdf', 'print'
+        ],
+        "pagingType": "full_numbers"
+      });
+
+      $('#myInput').on( 'keyup', function () {
+        table.search( this.value ).draw();
+      });
+
+    });
+
+    $('.deleteProjet').on('click', function() {
+        id = $(this).attr('id');
+        name = $(this).attr('name');
+        $('#modalContent').html("Cliquez sur Supprimer si vous êtes sûr de bien vouloir supprimer le projet <strong>"+ name +"</strong>.");
+        $('#supprimer').on('click', function() {
+            var url = "{% url 'destroyProjet' 1 %}".replace('1', id);
+            $('#supprimer').attr('href', url);
+        })
+    })
+  </script>
+{% endblock %}

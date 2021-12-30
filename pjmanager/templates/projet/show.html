@@ -1,0 +1,431 @@
+{% extends 'old/base.html' %}
+{% load static %}
+{% load user_tags %}
+{% load i18n %}
+
+{% block pageTitle %}
+    {% if projet.deleted %}
+    <div class="d-flex justify-content-between">
+      <div class="p-2">Projet supprimé</div>
+      <div class=" ml-auto p-2"><a href="{% url 'obj_history' classe='projet' pk=projet.id %}" class="btn btn-facebook btn-block">Historique</a></div>
+    </div>
+    
+    {% else %}
+    <div class="d-flex justify-content-between">
+      <div class="p-2">Projet {{projet.titre}}</div>
+     <!--  <div class=" ml-auto p-2"><a href="{% url 'destroyProjet' projet.id %}" class="btn btn-google btn-block">Supprimer</a></div> -->
+      <div class=" ml-auto p-2"><a class="btn btn-google btn-block deleteProject"action="delete" href="#" data-toggle="modal" data-target="#deleteProject" name="{{projet.titre}}" id="{{projet.id}}">Supprimer</a></div>
+      <div class=" ml-auto p-2"><a href="{% url 'obj_history' classe='projet' pk=projet.id %}" class="btn btn-facebook btn-block">Historique</a></div>
+    </div>
+    {% endif %}
+{% endblock %}
+
+{% block pageContent %}
+
+{% if projet.deleted %}
+  <link href="{% static 'css/trash.css' %}" rel="stylesheet">
+{% endif %}
+
+          <!-- Content Row -->
+          <div class="row">
+
+            <!-- Content Column -->
+            <div class="col-lg-6 mb-4">
+
+              <!-- Project Card Example -->
+              <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                  <h6 class="m-0 font-weight-bold text-primary">Général</h6>
+                </div>
+                <div class="card-body">
+                  <form class="form-horizontal form-material" method="POST" action="{% url 'updateProjet' projet.id %}">{% csrf_token %}
+                      <div class="form-group">
+                          <label for="example-titre" class="col-md-12">Titre</label>
+                          <div class="col-md-12">
+                              <input type="text" placeholder="Titre du projet" class="form-control form-control-line" name="titre" id="example-titre" value="{{projet.titre}}">
+                          </div>
+                          {% for error in form.titre.errors %}
+                          <div class="invalid">
+                            <strong>{{ error|escape }}</strong>
+                          </div>
+                          {% endfor %}
+                      </div>
+                      <div class="form-group">
+                          <label for="example-type" class="col-md-12">Type</label>
+                          <div class="col-md-12">
+                              <select class="form-control form-control-line" id="example-type" name="type" required="">
+                                {% for type in types %}
+                                  {% ifequal projet.type.id type.id %}
+                                  <option value="{{type.id}}" selected="">{{type.libelle}}</option>
+                                  {% endifequal %}
+                                  <option value="{{type.id}}">{{type.libelle}}</option>
+                                {% endfor %}
+                              </select>
+                          </div>
+                      </div>
+                      <div class="form-group">
+                          <label for="example-description" class="col-md-12">Description</label>
+                          <div class="col-md-12">
+                            <textarea name="description" id="example-description" class="form-control form-control-line">{{projet.description}}</textarea>
+                          </div>
+                          {% for error in form.description.errors %}
+                          <div class="invalid">
+                            <strong>{{ error|escape }}</strong>
+                          </div>
+                          {% endfor %}
+                      </div>
+
+                      <hr>
+
+                      <div class="form-group row">
+                        <div class="input-group date col-sm-12" id="id_dte_crea" data-target-input="nearest">
+                          <label class="col-md-12">Créé le</label>
+                          <div class="col-md-12 d-flex">
+                              <input type="text" name="dte_crea" required="" id="id_dte_crea" class="form-control form-control-line" value="{{projet.date_creation|date:'d/m/Y H:i'}}" disabled="">
+                              <div class="input-group-append">
+                                  <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                              </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="form-group row">
+
+                        <div class="col-sm-6">
+                              <label class="col-md-12">Débuté le</label>
+                              <div class="col-md-12 d-flex">
+                                  {{form.dte_deb}}
+                                  <div class="input-group-append">
+                                      <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                                  </div>
+                              </div>
+                              {% for error in form.dte_deb.errors %}
+                              <div class="invalid">
+                                <strong>{{ error|escape }}</strong>
+                              </div>
+                              {% endfor %}
+                        </div>
+
+                          <div class="col-sm-6">
+                              <label class="col-md-12">Fini le</label>
+                              <div class="col-md-12 d-flex">
+                                  {{form.dte_fin}}
+                                  <div class="input-group-append">
+                                      <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                                  </div>
+                              </div>
+                              {% for error in form.dte_fin.errors %}
+                              <div class="invalid" id="test">
+                                <strong>{{ error|escape }}</strong>
+                              </div>
+                              {% endfor %}
+                          </div>
+                        
+                          <!-- <div class="col-sm-4">
+                              <label class="col-md-12">Créé le</label>
+                              <div class="col-md-12">
+                                  <input type="datetime"
+                                      class="form-control form-control-line" name="telephone" 
+                                      value="{% language 'fr' %}{{projet.date_creation|date:'D, d M Y H:i:s e'|default_if_none:'-' }}{% endlanguage %}"
+                                  >
+                              </div>
+                          </div> -->
+
+                          <!-- <div class="col-sm-4">
+                              <label class="col-md-12">Débuté le</label>
+                              <div class="col-md-12">
+                                  <input type="datetime" class="form-control form-control-line" value='{{projet.date_debut}}'> </div>
+                          </div>
+
+                          <div class="col-sm-4">
+                              <label class="col-md-12">Fini le</label>
+                              <div class="col-md-12">
+                                  <input type="datetime" class="form-control form-control-line" value='{{projet.date_fin}}'> </div>
+                          </div> -->
+                      </div>
+
+                      <div class="form-group form-check-inline" style="margin: .375rem .75rem;">
+                          {% if request.user.is_admin %}
+                              {% if projet.estvalide %}
+                              <input class="form-check-input" type="checkbox" name="estvalide" id="estvalide" checked>
+                              {% else %}
+                              <input class="form-check-input" type="checkbox" name="estvalide" id="estvalide">
+                              {% endif %}
+                          {% else %}
+                              {% if projet.estvalide %}
+                              <input class="form-check-input" type="checkbox" name="estvalide" id="estvalide" disabled checked>
+                              {% else %}
+                              <input class="form-check-input" type="checkbox" name="estvalide" id="estvalide" disabled>
+                              {% endif %}
+                          {% endif %}
+                          <label for="estvalide" class="form-check-label">Valide</label>
+                      </div>
+
+                      <div class="form-group form-check-inline" style="margin: .375rem .75rem;">
+                          {% if request.user.is_admin %}
+                              {% if projet.estsatisfaisant %}
+                              <input class="form-check-input" type="checkbox" name="estsatisfaisant" id="estsatisfaisant" checked>
+                              {% else %}
+                              <input class="form-check-input" type="checkbox" name="estsatisfaisant" id="estsatisfaisant">
+                              {% endif %}
+                          {% else %}
+                              {% if projet.estsatisfaisant %}
+                              <input class="form-check-input" type="checkbox" name="estsatisfaisant" id="estsatisfaisant" disabled checked>
+                              {% else %}
+                              <input class="form-check-input" type="checkbox" name="estsatisfaisant" id="estsatisfaisant" disabled>
+                              {% endif %}
+                          {% endif %}
+                          <label for="estsatisfaisant" class="form-check-label">Satisfaisant</label>
+                      </div>
+
+                      <div class="form-group form-check-inline" style="margin: .375rem .75rem;">
+                          {% if request.user.is_admin %}
+                              {% if projet.statut %}
+                              <input class="form-check-input" type="checkbox" name="statut" id="statut" checked>
+                              {% else %}
+                              <input class="form-check-input" type="checkbox" name="statut" id="statut">
+                              {% endif %}
+                          {% else %}
+                              {% if projet.statut %}
+                              <input class="form-check-input" type="checkbox" name="statut" id="statut" disabled checked>
+                              {% else %}
+                              <input class="form-check-input" type="checkbox" name="statut" id="statut" disabled>
+                              {% endif %}
+                          {% endif %}
+                          <label for="statut" class="form-check-label">Terminé</label>
+                      </div>
+
+                      <hr>
+
+                      <div class="form-group">
+                          <div class="col-sm-12">
+                              <input type="submit" class="btn btn-primary btn-user btn-block" value="Mettre à jour">
+                          </div>
+                      </div>
+                  </form>
+                  <hr>
+                </div>
+              </div>
+
+            </div>
+            <!-- Content Column -->
+            <div class="col-lg-6 mb-4">
+
+              <!-- Project Card Example -->
+              <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                  <h6 class="m-0 font-weight-bold text-primary">Équipe</h6>
+                </div>
+                <div class="card-body">
+                  <table class="table table-hover">
+                    <thead>
+                      <tr>
+                        <th scope="col">Nom</th>
+                        <th scope="col">Poste</th>
+                        <th scope="col">Rôle</th>
+                        <th scope="col"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for t in team %}
+                      <tr>
+                        <td>{{t.user.nom}} {{t.user.prenom}}</td>
+                        <td>{{t.get_user_role_display}}</td>
+                        <td>{{t.get_user_statut_display}}</td>
+                        <td>
+                          <a class="rmvTeamMember" id="{{t.id}}" name="{{t.user.nom}} {{t.user.prenom}}" href="#" data-toggle="modal" data-target="#rmvTeamMember">
+                            <i class="fas fa-minus-circle" style="color: red;"></i>
+                          </a>
+                        </td>
+                      </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+
+                  <hr>
+
+                    <a class="btn btn-primary btn-user btn-block" href="#" data-toggle="modal" data-target="#addTeamMember">
+                      <!-- <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i> -->
+                      Ajouter un participant
+                    </a>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+
+
+  <!-- Add Team Member Modal-->
+  <div class="modal fade" id="addTeamMember" tabindex="-1" role="dialog" aria-labelledby="addTeamMemberLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addTeamMemberLabel">Ajouter un participant au projet</h5>
+          <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">×</span>
+          </button>
+        </div>
+        <div class="modal-body">
+              <form method="POST" class="user" action="{% url 'addUserTeam' projet.id %}">{% csrf_token %}
+                  <div class="form-group">
+                      <label for="example-user" class="col-md-12">Utilisateur</label>
+                      <div class="col-md-12">
+                          <select class="form-control form-control-line" id="example-user" name="user" required="">
+                            {% for user in users %}
+                              <option value="{{user.id}}">{{user.nom}} {{user.prenom}}</option>
+                            {% endfor %}
+                          </select>
+                      </div>
+                  </div>
+
+                  <div class="form-group">
+                      <label for="example-user_role" class="col-md-12">Poste</label>
+                      <div class="col-md-12">
+                          <select class="form-control form-control-line" id="example-user_role" name="user_role">
+                              <option value="">---------</option>
+                              <option value="1">Developpeur</option>
+                              <option value="2">Designer</option>
+                          </select>
+                      </div>
+                  </div>
+
+                  <div class="form-group">
+                      <label for="example-user_statut" class="col-md-12">Rôle</label>
+                      <div class="col-md-12">
+                          <select class="form-control form-control-line" id="example-user_statut" name="user_statut" required="">
+                              <option value="" selected="">---------</option>
+                              <option value="1">Responsable</option>
+                              <option value="2">Participant</option>
+                              <option value="3">Superviseur</option>
+                          </select>
+                      </div>
+                  </div>
+                  <hr>
+                  <input type="hidden" name="next" value="{{ request.path }}">
+                  <input type="submit" class="btn btn-primary btn-user btn-block" value="Ajouter">
+              </form>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" type="button" data-dismiss="modal">Annuler</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Team Member Modal-->
+  <div class="modal fade" id="rmvTeamMember" tabindex="-1" role="dialog" aria-labelledby="rmvTeamMemberLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="rmvTeamMemberLabel">Retirer du projet?</h5>
+          <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">×</span>
+          </button>
+        </div>
+        <div class="modal-body" id="rmvTeamMemberContent"></div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" type="button" data-dismiss="modal">Annuler</button>
+          <a class="btn btn-danger" id="retirer">Retirer</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+    <!-- Delete Project Modal-->
+  <div class="modal fade" id="deleteProject" tabindex="-1" role="dialog" aria-labelledby="deleteProjectLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="deleteProjectLabel">Supprimer le projet?</h5>
+          <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">×</span>
+          </button>
+        </div>
+        <div class="modal-body" id="deleteProjectContent"></div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" type="button" data-dismiss="modal">Annuler</button>
+          <a class="btn btn-danger text-light" id="supprimer">Supprimer</a>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block js %}
+  <!-- Bootstrap core JavaScript-->
+  <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
+  <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+
+  <!-- Core plugin JavaScript-->
+  <script src="{% static 'vendor/jquery-easing/jquery.easing.min.js' %}"></script>
+
+  <!-- Custom scripts for all pages-->
+  <script src="{% static 'js/sb-admin-2.min.js' %}"></script>
+
+  <script type="text/javascript">
+    $('.deleteProject').on('click', function() {
+        id = $(this).attr('id');
+        name = $(this).attr('name');
+        $('#deleteProjectContent').html("Cliquez sur Supprimer si vous êtes sûr de bien vouloir supprimer le type <strong>"+ name +"</strong>.");
+        $('#supprimer').on('click', function() {
+            var url = "{% url 'destroyProjet' 1 %}".replace('1', id);
+            $('#supprimer').attr('href', url);
+        })
+    })
+
+    $('.rmvTeamMember').on('click', function() {
+      id = $(this).attr('id');
+      name = $(this).attr('name');
+      $('#rmvTeamMemberContent').html("Cliquez sur Retirer si vous êtes sûr de bien vouloir retirer "+ name +" du projet.");
+      $('#rmvTeamMember').on('click', function() {
+        var url = "{% url 'destroyTeam' 1 %}".replace('1', id);
+        $('#retirer').attr('href', url);
+      })
+    })
+  </script>
+
+  <!-- XDSoft DateTimePicker -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-datetimepicker/2.5.20/jquery.datetimepicker.min.css" integrity="sha256-DOS9W6NR+NFe1fUhEE0PGKY/fubbUCnOfTje2JMDw3Y=" crossorigin="anonymous" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-datetimepicker/2.5.20/jquery.datetimepicker.full.min.js" integrity="sha256-FEqEelWI3WouFOo2VWP/uJfs1y8KJ++FLh2Lbqc8SJk=" crossorigin="anonymous"></script>
+ <script>
+    // $(function () {
+    //   $("#datetimepicker").datetimepicker();
+    // });
+      $("input[id='id_dte_deb']").attr({
+        'class':'form-control form-control-line date',
+        'value':"{{projet.date_debut|date:'d/m/Y H:i'}}",
+      });
+      $("input[id='id_dte_fin']").attr({
+        'class':'form-control form-control-line date',
+        'value':"{{projet.date_fin|date:'d/m/Y H:i'}}",
+      });
+      $("date").removeAttr("required");
+
+      $.datetimepicker.setLocale('fr');
+      
+      $(function () {
+          $(".date").datetimepicker({
+            i18n:{
+                de:{
+                 months:[
+                  'Janvier','Février','Mars','Avril',
+                  'Mai','Juin','Juillet','Août',
+                  'Septembre','Octobre','Novembre','Decembre',
+                 ],
+                 dayOfWeek:[
+                  "Lun.", "Mar", "Mer", 
+                  "Jeu", "Ven", "Sam","Dim."
+                 ]
+                }
+            },
+            // value:"09/05/2021 15:00",
+            format:'d/m/Y H:i',
+          });
+      });
+
+  </script>
+
+
+{% endblock %}
+

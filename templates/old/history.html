@@ -1,0 +1,161 @@
+{% extends 'old/base.html' %}
+{% block pageTitle %}Historique{% endblock %}
+{% block pageContent %}
+<style type="text/css">
+  .card {
+    background: #fff;
+    min-height: 50px;
+    word-wrap: break-word;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    position: relative;
+    margin-bottom: 30px;
+    border: 1px solid #e3e6f0;
+    -webkit-border-radius: .35rem;
+    -moz-border-radius: .35rem;
+    -ms-border-radius: .35rem;
+    border-radius: .35rem;
+  }
+  .card .header {
+    color: #555;
+    padding: 20px;
+    position: relative;
+    border-bottom: 1px solid rgba(204, 204, 204, 0.35);
+  }
+  .card .header h2 {
+    margin: 0;
+    font-size: 18px; //2rem
+    font-weight: normal;
+    color: #111;
+  }
+  .card .header h2 small {
+    display: block;
+    font-size: 12px;
+    margin-top: 5px;
+    color: #999;
+    line-height: 15px;
+  }
+  .card .body {
+    font-size: 14px; //1rem
+    color: #555;
+    padding: 20px;
+  }
+  p {
+    margin: 0 0 10px;
+  }
+  .clearfix::after{
+    clear: both;
+  }
+  .clearfix::before{
+    display: table;
+    content: " ";
+  }
+</style>
+        <!-- {% for h in history %}
+          <a href="{% url 'home' %}" style="text-decoration: none;">
+            <div class="row clearfix">
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                    <div class="card">
+                        <div class="header">
+                            <h2>
+                                {{h.object}}
+                                <small>{{h.history_date}}</small>
+                            </h2>
+                        </div>
+                        <div class="body">
+                            <p>{{h.get_history_type_display}}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+          </a>
+        {% endfor %} -->
+
+        <!-- {% for h, o in history.items %}
+          <a href="{% url 'home' %}" style="text-decoration: none;">
+            <div class="row clearfix">
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                    <div class="card">
+                        <div class="header">
+                            <h2>
+                              {% if o.user %}
+                                {{o.user}} - {{o.projet}}
+                              {% else %}
+                                {{o}}
+                              {% endif %}
+                                <small>{{h.history_date}}</small>
+                            </h2>
+                        </div>
+                        <div class="body">
+                              {% if o.user %}
+                                <p>{{o.type}}</p>
+                              {% else %}
+                                <p>{{h.get_history_type_display}}</p>
+                              {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+          </a>
+        {% endfor %} -->
+        {% for elm in history %}
+          <!-- Content Row -->
+          <a href="{% url 'home' %}" style="text-decoration: none;">
+            <div class="row clearfix">
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                    <div class="card">
+                        <div class="header">
+                            <h2>
+                              {% if elm.1.user %}
+                                {{elm.1.user}} - {{elm.1.projet}}
+                              {% else %}
+                                {{elm.1}}
+                              {% endif %}
+                                <small>{{elm.0.history_date}}</small>
+                            </h2>
+                        </div>
+                        <div class="body">
+                              {% if elm.1.user %}
+                                <p>{{elm.1.type}}</p>
+                              {% else %}
+                                <p>{{elm.0.get_history_type_display}}</p>
+                              {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+          </a>
+        {% endfor %}
+
+    <div class="clearfixf float-right">
+
+      <nav aria-label="Page navigation example">
+      <ul class="pagination">
+        {% if history.paginator.num_pages <= 10 %}
+          {% if history.has_previous %}
+          <li class="page-item"><a class="page-link"href="?page={{ history.previous_page_number }}">Précédent</a></li>               
+          {% endif %}
+
+          {% for i in history.paginator.page_range %}
+          <li class="page-item"><a class="page-link" href="?page={{i}}">{{i}}</a></li>
+          {% endfor %}
+
+          {% if history.has_next %}
+          <li class="page-item"><a class="page-link" href="?page={{ history.next_page_number }}">Suivant</a></li>
+          {% endif %}
+        {% else %}
+          {% if history.has_previous %}
+          <li class="page-item"><a class="page-link"href="?page=1">Page 1</a></li> 
+          <li class="page-item"><a class="page-link"href="?page={{ history.previous_page_number }}">Précédent</a></li>               
+          {% endif %}
+          <li class="page-item">Page {{ history.number }} of {{ history.paginator.num_pages }}.</li>
+
+          {% if history.has_next %}
+          <li class="page-item"><a class="page-link" href="?page={{ history.next_page_number }}">Suivant</a></li>
+          <li class="page-item"><a class="page-link" href="?page={{ history.paginator.num_pages }}">Page{{history.next_page_number}}</a></li>
+          {% endif %}
+        {%endif%}
+      </ul>
+      </nav>
+
+    </div>
+{% endblock %}

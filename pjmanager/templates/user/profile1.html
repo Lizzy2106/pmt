@@ -1,0 +1,517 @@
+{% extends 'old/base.html' %}
+{% load static %}
+{% load user_tags %}
+{% load i18n %}
+
+{% block pageTitle %}
+    {% if user.deleted %}
+    <div class="d-flex justify-content-between">
+      <div class="p-2">Utilisateur supprimé</div>
+      <div class=" ml-auto p-2"><a href="{% url 'obj_history' classe='user' pk=user.id %}" class="btn btn-facebook btn-block">Historique</a></div>
+    </div>
+    {% else %}
+    <div class="d-flex justify-content-between">
+      <div class="p-2">{{user}}</div>
+      <div class=" ml-auto p-2"><a class="btn btn-google btn-block deleteUser"action="delete" href="#" data-toggle="modal" data-target="#deleteUser" name="{{user}}" id="{{user.id}}">Supprimer</a></div>
+      <div class=" ml-auto p-2"><a href="{% url 'obj_history' classe='user' pk=user.id %}" class="btn btn-facebook btn-block">Historique</a></div>
+    </div>
+    {% endif %}
+{% endblock %}
+{% block pageContent %}
+<!-- JQuery DataTable Css -->
+<style type="text/css">
+  .dataTables_filter, .dataTables_info { display: none; }
+  table.dataTable thead .sorting:before,
+  table.dataTable thead .sorting_asc:before,
+  table.dataTable thead .sorting_desc:before,
+  table.dataTable thead .sorting_asc_disabled:before,
+  table.dataTable thead .sorting_desc_disabled:before {
+    right: 1em;
+    content: "\2191";
+  }
+  table.dataTable thead .sorting:after,
+  table.dataTable thead .sorting_asc:after,
+  table.dataTable thead .sorting_desc:after,
+  table.dataTable thead .sorting_asc_disabled:after,
+  table.dataTable thead .sorting_desc_disabled:after {
+   left: 0.5em;
+   content: "\2193";
+  }
+
+
+</style>
+{% if user.deleted %}
+  <link href="{% static 'css/trash.css' %}" rel="stylesheet">
+{% endif %}
+        <div id="page-wrapper">
+            <div class="container-fluid">
+                <!-- .row -->
+                <div class="row">
+                    <div class="col-md-4 col-xs-12">
+
+                      <div class="card mb-4">
+                        <div class="card-body">
+                          <img width="100%" alt="user" src="{% static 'img/img1.jpg' %}">                        </div>
+                        <div class="card-footer">
+                            <h4>{{user.nom}}</h4>
+                            <h5>{{user.prenom}}</h5>
+                            <h6 class="text-right">{{user.date_creation}}</h6>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="col-md-8 col-xs-12">
+                        <ul class="nav nav-tabs" id="myTab" role="tablist">
+                          <li class="nav-item">
+                            <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true">Home</a>
+                          </li>
+                          <li class="nav-item">
+                            <a class="nav-link" id="groups-tab" data-toggle="tab" href="#groups" role="tab" aria-controls="groups" aria-selected="false">Groupes et permissions</a>
+                          </li>
+                          <li class="nav-item">
+                            <a class="nav-link" id="project-tab" data-toggle="tab" href="#project" role="tab" aria-controls="project" aria-selected="false">Projets affécetés</a>
+                          </li>
+                        </ul>
+
+                        <div class="tab-content" id="myTabContent">
+                          <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+                            <div class="white-box">
+                                <form class="form-horizontal form-material" method="POST">{% csrf_token %}
+                                    <div class="form-group row" style="padding:.375rem .75rem;">
+                                      <div class="col-sm-4 mb-3 mb-sm-0">
+                                        <label class="col-md-12">Nom</label>
+                                        <input type="text" class="form-control form-control-line col-md-12" id="id_nom" placeholder="Nom" name="nom" value={{user.nom}}>
+                                        {% for error in form.nom.errors %}
+                                        <div class="invalid">
+                                          <strong>{{ error|escape }}</strong>
+                                        </div>
+                                        {% endfor %}
+                                      </div>
+                                      <div class="col-sm-4">
+                                        <label class="col-md-12">Prenom</label>
+                                        <input type="text" class="form-control form-control-linecol-md-12" id="id_prenom" placeholder="Prenom" name="prenom" value={{user.prenom}}>
+                                        {% for error in form.prenom.errors %}
+                                        <div class="invalid">
+                                          <strong>{{ error|escape }}</strong>
+                                        </div>
+                                        {% endfor %}
+                                      </div>
+                                      <div class="col-sm-4">
+                                        <label class="col-md-12">Sexe</label>
+                                        <select class="form-control form-control-line col-md-12" id="id_sexe" name="sexe" required="">
+                                            {% ifequal user.sexe 1 %}
+                                          <option value="1" selected="">Feminin</option>
+                                          <option value="2">Masculin</option>
+                                          {% else %}
+                                          <option value="1">Feminin</option>
+                                          <option value="2" selected="">Masculin</option>
+                                          {% endifequal %}
+                                        </select>
+                                      </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="example-email" class="col-md-12">Email</label>
+                                        <div class="col-md-12">
+                                            <input type="email" placeholder="johnathan@admin.com"class="form-control form-control-line" name="email" id="example-email" value="{{user.email}}">
+                                        </div>
+                                        {% for error in form.email.errors %}
+                                        <div class="invalid">
+                                          <strong>{{ error|escape }}</strong>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+
+                                    <hr>
+
+                                    <div class="form-group row">
+                                        <div class="col-sm-6">
+                                            <label class="col-md-12">Phone No</label>
+                                            <div class="col-md-12">
+                                                <input type="text" placeholder="123 456 7890"
+                                                    class="form-control form-control-line" name="telephone" value='{{user.telephone|default_if_none:""}}' id="telephone">
+                                            </div>
+                                            {% for error in form.telephone.errors %}
+                                            <div class="invalid">
+                                              <strong>{{ error|escape }}</strong>
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+
+                                        <div class="col-sm-6">
+                                            <label class="col-md-12">Adresse</label>
+                                            <div class="col-md-12">
+                                                <input type="text" placeholder="124 Main Street"class="form-control form-control-line" value='{{user.adresse|default_if_none:""}}' name="adresse" id="adresse">
+                                            </div>
+                                            {% for error in form.adresse.errors %}
+                                            <div class="invalid">
+                                              <strong>{{ error|escape }}</strong>
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    <hr>
+
+                                    <div class="form-group">
+                                        <label class="col-md-12">Mot de passe</label>
+                                        <div class="col-md-12">
+                                            <input type="password" value="password" class="form-control form-control-line" id="password" name="password" required="">
+                                        </div>
+                                        {% for error in form.password.errors %}
+                                        <div class="invalid">
+                                          <strong>{{ error|escape }}</strong>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+
+                                    <div class="form-group">
+                                        <div class="col-sm-12">
+                                            <input type="submit" class="btn btn-primary btn-user btn-block" value="Mettre à jour">
+                                        </div>
+                                    </div>
+                                </form>
+                              <hr>
+                            </div>
+                          </div>
+
+                          <div class="tab-pane fade" id="groups" role="tabpanel" aria-labelledby="groups-tab">
+                            <form id="addGroup" action="{% url 'addGroup' user.id %}" method="POST">{% csrf_token %}
+                              <div class="form-group row">
+                                <div class="col-sm-5">
+                                  <div class="card" style="width: 18rem;">
+                                    <div class="card-header">
+                                      <h5 class="card-title">Groupes disponibles</h5>
+                                      <input type='text' class='search-input card-subtitle' autocomplete='off' placeholder='Commencer à taper...'>
+                                    </div>
+                                    <div class="card-body" id="to_select" style=" overflow: auto; height: 300px;">
+                                    </div>
+
+                                    <div class="card-footer text-muted text-center">
+                                      <a class='add_all text-primary' href='#' id='select-all'>Tout sélectionner<i class='fas fa-chevron-circle-right'></i></a>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <div class="col-sm-2 d-flex justify-content-center align-items-center">
+                                  <div class="w-25 box">
+                                    <i class='fas fa-arrow-circle-right'></i></a>
+                                    <i class='fas fa-arrow-circle-left'></i></a>
+                                  </div>
+                                </div>
+
+                                <div class="col-sm-5">
+                                  <div class="card" style="width: 18rem;">
+                                    <div class="card-header">
+                                      <h5 class="card-title">Groupes accordées</h5>
+                                      <input type='text' class='search-input card-subtitle' autocomplete='off' placeholder='Commencer à taper...'>
+                                    </div>
+                                    <div class="card-body" id="are_select" style=" overflow: auto; height: 300px;">
+                                    </div>
+
+                                    <div class="card-footer text-muted text-center">
+                                      <a class='remove_all text-primary' href='#' id='deselect-all'><i class= 'fas fa-chevron-circle-left'></i>Tout retirer</a>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <!-- Multi Select -->
+                              <select multiple="searchable multiple" id="my-select" name="groups">
+
+                              </select>
+                               
+                              <!-- #END# Multi Select -->
+                              <input type="submit" class="btn btn-primary btn-block" value="Enreigistrer">
+                            </form>
+                          </div>
+
+                          <div class="tab-pane fade" id="project" role="tabpanel" aria-labelledby="project-tab">
+                            <div class="card shadow mb-4">
+                              <div class="card-header py-3">
+                                <div class="d-flex justify-content-between">
+                                  <div class="input-group p-2">
+                                    <input type="text" class="form-control bg-light border-0 small" placeholder="Rechercher..." aria-label="Rechercher" aria-describedby="basic-addon2" id="myInput">
+                                    <div class="input-group-append">
+                                      <button class="btn btn-primary" type="button">
+                                        <i class="fas fa-search fa-sm"></i>
+                                      </button>
+                                    </div>
+
+                                  </div>
+
+                                  <!-- <div class="input-group p-2">
+                                    <input type="number" class="form-control bg-light border-0 small" placeholder="Entry" aria-label="Search" aria-describedby="basic-addon2">
+                                  </div> -->
+                                </div>
+
+                              </div>
+
+                              <div class="card-body">
+                                <div class="table-responsive">
+                                  <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                                    <thead>
+                                      <tr>
+                                        <th>Projet</th>
+                                        <th>Statut du projet</th>
+                                        <th>Poste</th>
+                                        <th>Rôle</th>
+                                        <th>Date d'affectation</th>
+                                        <th>Actions</th>
+                                      </tr>
+                                    </thead>
+                                    <tfoot>
+                                      <tr>
+                                        <th>Projet</th>
+                                        <th>Statut du projet</th>
+                                        <th>Poste</th>
+                                        <th>Rôle</th>
+                                        <th>Date d'affectation</th>
+                                        <th>Actions</th>
+                                      </tr>
+                                    </tfoot>
+                                    <tbody>
+                                      {% for team in teams %}
+                                      <tr>
+                                        <td>{{team.projet.titre}}</td>
+                                        <td>{{team.projet.statut|yesno:"Fini, En Cours"}}</td>
+                                        <td>{{team.get_user_role_display}}</td>
+                                        <td>{{team.get_user_statut_display}}</td>
+                                        <td>
+                                          {% language 'fr' %}
+                                            {{team.date_creation|date:'D, d M Y H:i:s e'|default_if_none:""}}
+                                          {% endlanguage %}
+                                        </td>
+                                        <td>
+                                          <a href="{% url 'profile' user.id %}" class="btn btn-facebook btn-block">Voir</a>
+                                        </td>
+                                      </tr>
+                                      {% endfor %}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- /.row -->
+                <!-- <div class="row">
+                    <div class="col-md-12 col-xs-12">
+                      <div class="card shadow mb-4">
+                        <div class="card-header py-3">
+                            Projets affécetés
+                          <div class="d-flex justify-content-between">
+                            <div class="input-group p-2">
+                              <input type="text" class="form-control bg-light border-0 small" placeholder="Rechercher..." aria-label="Rechercher" aria-describedby="basic-addon2" id="myInput">
+                              <div class="input-group-append">
+                                <button class="btn btn-primary" type="button">
+                                  <i class="fas fa-search fa-sm"></i>
+                                </button>
+                              </div>
+
+                            </div>
+
+                            <div class="input-group p-2">
+                              <input type="number" class="form-control bg-light border-0 small" placeholder="Entry" aria-label="Search" aria-describedby="basic-addon2">
+                            </div>
+                          </div>
+
+                        </div>
+
+                        <div class="card-body">
+                          <div class="table-responsive">
+                            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                              <thead>
+                                <tr>
+                                  <th>Projet</th>
+                                  <th>Statut du projet</th>
+                                  <th>Poste</th>
+                                  <th>Rôle</th>
+                                  <th>Date d'affectation</th>
+                                  <th>Actions</th>
+                                </tr>
+                              </thead>
+                              <tfoot>
+                                <tr>
+                                  <th>Projet</th>
+                                  <th>Statut du projet</th>
+                                  <th>Poste</th>
+                                  <th>Rôle</th>
+                                  <th>Date d'affectation</th>
+                                  <th>Actions</th>
+                                </tr>
+                              </tfoot>
+                              <tbody>
+                                {% for team in teams %}
+                                <tr>
+                                  <td>{{team.projet.titre}}</td>
+                                  <td>{{team.projet.statut|yesno:"Fini, En Cours"}}</td>
+                                  <td>{{team.get_user_role_display}}</td>
+                                  <td>{{team.get_user_statut_display}}</td>
+                                  <td>
+                                    {% language 'fr' %}
+                                      {{team.date_creation|date:'D, d M Y H:i:s e'|default_if_none:""}}
+                                    {% endlanguage %}
+                                  </td>
+                                  <td>
+                                    <a href="{% url 'profile' user.id %}" class="btn btn-facebook btn-block">Voir</a>
+                                  </td>
+                                </tr>
+                                {% endfor %}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                </div> -->
+            </div>
+            <!-- Delete Project Modal-->
+  <div class="modal fade" id="deleteUser" tabindex="-1" role="dialog" aria-labelledby="deleteUserLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="deleteUserLabel">Supprimer le projet?</h5>
+          <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">×</span>
+          </button>
+        </div>
+        <div class="modal-body" id="deleteUserContent"></div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" type="button" data-dismiss="modal">Annuler</button>
+          <a class="btn btn-danger text-light" id="supprimer">Supprimer</a>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block js %}
+  <!-- <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script> -->
+  <!-- Bootstrap core JavaScript-->
+  <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
+  <script src="{% static 'vendor/bootstrap/js/bootstrap.js' %}"></script>
+  <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+
+  <!-- Core plugin JavaScript-->
+  <script src="{% static 'vendor/jquery-easing/jquery.easing.min.js' %}"></script>
+
+  <!-- Custom scripts for all pages-->
+  <script src="{% static 'js/sb-admin-2.min.js' %}"></script>
+
+<!-- Multi Select Plugin Js -->
+<script src="{% static 'multiselect/js/jquery.multi-select.js' %}" type="text/javascript"></script>
+<script src="{% static 'quicksearch/jquery.quicksearch.js' %}" type="text/javascript"></script>
+<script type="text/javascript">
+    {% for group in groups %}
+
+        {% if user|has_group:group.name %}
+          $('#my-select').append(`
+          <option value='{{group.id}}' id="{{group.id}}" selected>{{group.name}}</option>
+          `);
+        {% else %}
+          $('#my-select').append(`
+          <option value='{{group.id}}' id="{{group.id}}">{{group.name}}</option>
+          `);
+        {% endif %}
+
+    {% endfor %}
+
+
+  $('#my-select').multiSelect({
+    keepOrder: true,
+    afterInit: function(ms){
+    var that = this,
+        $selectableSearch = that.$selectableUl.prev(),
+        $selectionSearch = that.$selectionUl.prev(),
+        selectableSearchString = '#'+that.$container.attr('id')+' .ms-elem-selectable:not(.ms-selected)',
+        selectionSearchString = '#'+that.$container.attr('id')+' .ms-elem-selection.ms-selected';
+
+      that.qs1 = $selectableSearch.quicksearch(selectableSearchString)
+      .on('keydown', function(e){
+        if (e.which === 40){
+          that.$selectableUl.focus();
+          return false;
+        }
+      });
+
+      that.qs2 = $selectionSearch.quicksearch(selectionSearchString)
+      .on('keydown', function(e){
+        if (e.which == 40){
+          that.$selectionUl.focus();
+          return false;
+          }
+      });
+    },
+    afterSelect: function(){
+      this.qs1.cache();
+      this.qs2.cache();
+    },
+    afterDeselect: function(){
+      this.qs1.cache();
+      this.qs2.cache();
+    }
+  });
+
+  $('#select-all').click(function(){
+    $('#my-select').multiSelect('select_all');
+    return false;
+  });
+  $('#deselect-all').click(function(){
+    $('#my-select').multiSelect('deselect_all');
+    return false;
+  });
+  $('#add-option').on('click', function(){
+    $('#my-select').multiSelect('addOption', { value: 42, text: 'test 42', index: 0 });
+    return false;
+  });
+
+  // Moove selected div
+  $(document).ready(function() {
+    $('.ms-selectable').appendTo('#to_select');
+    $('.ms-selection').appendTo('#are_select');
+    $('.ms-list').addClass('list-group list-group-flush');
+    $('.ms-elem-selectable').addClass('list-group-item');
+    $('.ms-elem-selection').addClass('list-group-item');
+
+    $(".permissions[action='add']").removeAttr("data-toggle");
+  });
+
+</script>
+
+  <!-- Datatables plugins -->
+  <script src="{% static 'vendor/datatables/jquery.dataTables.min.js' %}"></script>
+  <script src="{% static 'vendor/datatables/dataTables.bootstrap4.min.js' %}"></script>
+
+  <!-- Page level custom scripts -->
+  <script type="text/javascript">
+    $('.deleteUser').on('click', function() {
+        id = $(this).attr('id');
+        name = $(this).attr('name');
+        $('#deleteUserContent').html("Cliquez sur Supprimer si vous êtes sûr de bien vouloir supprimer le type <strong>"+ name +"</strong>.");
+        $('#supprimer').on('click', function() {
+            var url = "{% url 'destroyUser' 1 %}".replace('1', id);
+            $('#supprimer').attr('href', url);
+        })
+    })
+
+    $(document).ready(function() {
+      var table = $('#dataTable').DataTable({
+        responsive: true,
+        dom: 'lBfrtip',
+        "bLengthChange": false,
+        buttons: [
+          'copy', 'csv', 'excel', 'pdf', 'print'
+        ],
+        "pagingType": "full_numbers"
+      });
+
+      $('#myInput').on( 'keyup', function () {
+        table.search( this.value ).draw();
+      });
+
+    });
+
+  </script>
+{% endblock %}

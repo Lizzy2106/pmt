@@ -1,0 +1,13 @@
+{% extends 'old/base.html' %}
+{% block pageTitle %}{% endblock %}
+{% block pageContent %}
+
+  <!-- 500 Error Text -->
+  <div class="text-center">
+    <div class="error mx-auto" data-text="500">500</div>
+    <p class="lead text-gray-800 mb-5">Erreur Interne du Serveur</p>
+    <p class="text-gray-500 mb-0">Il semble que vous ayez trouvé une erreur dans la matrice...</p>
+    <a href="{% url 'home' %}">&larr; Retour à l'acceuil</a>
+  </div>
+
+{% endblock %}

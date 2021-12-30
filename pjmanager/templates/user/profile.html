@@ -1,0 +1,353 @@
+{% extends 'old/base.html' %}
+{% load static %}
+{% load user_tags %}
+{% load i18n %}
+
+{% block pageTitle %}
+    {% if user.deleted %}
+    Utilisateur supprimé
+    {% else %}
+    <div class="d-flex justify-content-between">
+      <div class="p-2">{{user}}</div>
+      <div class=" ml-auto p-2"><a href="{% url 'destroyProjet' user.id %}" class="btn btn-google btn-block">Supprimer</a></div>
+      <div class=" ml-auto p-2"><a href="{% url 'obj_history' classe='user' pk=user.id %}" class="btn btn-facebook btn-block">Historique</a></div>
+    </div>
+    {% endif %}
+{% endblock %}
+{% block pageContent %}
+<!-- JQuery DataTable Css -->
+<style type="text/css">
+  .dataTables_filter, .dataTables_info { display: none; }
+  table.dataTable thead .sorting:before,
+  table.dataTable thead .sorting_asc:before,
+  table.dataTable thead .sorting_desc:before,
+  table.dataTable thead .sorting_asc_disabled:before,
+  table.dataTable thead .sorting_desc_disabled:before {
+    right: 1em;
+    content: "\2191";
+  }
+  table.dataTable thead .sorting:after,
+  table.dataTable thead .sorting_asc:after,
+  table.dataTable thead .sorting_desc:after,
+  table.dataTable thead .sorting_asc_disabled:after,
+  table.dataTable thead .sorting_desc_disabled:after {
+   left: 0.5em;
+   content: "\2193";
+  }
+
+
+</style>
+{% if user.deleted %}
+  <link href="{% static 'css/trash.css' %}" rel="stylesheet">
+{% endif %}
+        <div id="page-wrapper">
+            <div class="container-fluid">
+                <!-- .row -->
+                <div class="row">
+                    <div class="col-md-4 col-xs-12">
+
+                      <div class="card mb-4">
+                        <div class="card-body">
+                          <img width="100%" alt="user" src="{% static 'img/img1.jpg' %}">                        </div>
+                        <div class="card-footer">
+                            <h4>{{user.nom}}</h4>
+                            <h5>{{user.prenom}}</h5>
+                            <h6 class="text-right">{{user.date_creation}}</h6>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="col-md-8 col-xs-12">
+                      <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                          <button class="nav-link active" id="pills-home-tab" data-bs-toggle="pill" data-bs-target="#pills-home" type="button" role="tab" aria-controls="pills-home" aria-selected="true">Home</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                          <button class="nav-link" id="pills-profile-tab" data-bs-toggle="pill" data-bs-target="#pills-profile" type="button" role="tab" aria-controls="pills-profile" aria-selected="false">Profile</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                          <button class="nav-link" id="pills-contact-tab" data-bs-toggle="pill" data-bs-target="#pills-contact" type="button" role="tab" aria-controls="pills-contact" aria-selected="false">Contact</button>
+                        </li>
+                      </ul>
+
+                      <div class="tab-content" id="pills-tabContent">
+                        <div class="tab-pane fade show active" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab">
+                        <div class="white-box">
+                            <form class="form-horizontal form-material" method="POST">{% csrf_token %}
+                                <div class="form-group row" style="padding:.375rem .75rem;">
+                                  <div class="col-sm-4 mb-3 mb-sm-0">
+                                    <label class="col-md-12">Nom</label>
+                                    <input type="text" class="form-control form-control-line col-md-12" id="id_nom" placeholder="Nom" name="nom" value={{user.nom}}>
+                                    {% for error in form.nom.errors %}
+                                    <div class="invalid">
+                                      <strong>{{ error|escape }}</strong>
+                                    </div>
+                                    {% endfor %}
+                                  </div>
+                                  <div class="col-sm-4">
+                                    <label class="col-md-12">Prenom</label>
+                                    <input type="text" class="form-control form-control-linecol-md-12" id="id_prenom" placeholder="Prenom" name="prenom" value={{user.prenom}}>
+                                    {% for error in form.prenom.errors %}
+                                    <div class="invalid">
+                                      <strong>{{ error|escape }}</strong>
+                                    </div>
+                                    {% endfor %}
+                                  </div>
+                                  <div class="col-sm-4">
+                                    <label class="col-md-12">Sexe</label>
+                                    <select class="form-control form-control-line col-md-12" id="id_sexe" name="sexe" required="">
+                                        {% ifequal user.sexe 1 %}
+                                      <option value="1" selected="">Feminin</option>
+                                      <option value="2">Masculin</option>
+                                      {% else %}
+                                      <option value="1">Feminin</option>
+                                      <option value="2" selected="">Masculin</option>
+                                      {% endifequal %}
+                                    </select>
+                                  </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="example-email" class="col-md-12">Email</label>
+                                    <div class="col-md-12">
+                                        <input type="email" placeholder="johnathan@admin.com"class="form-control form-control-line" name="email" id="example-email" value="{{user.email}}">
+                                    </div>
+                                    {% for error in form.email.errors %}
+                                    <div class="invalid">
+                                      <strong>{{ error|escape }}</strong>
+                                    </div>
+                                    {% endfor %}
+                                <hr>
+
+                                <div class="form-group row">
+                                    <div class="col-sm-6">
+                                        <label class="col-md-12">Phone No</label>
+                                        <div class="col-md-12">
+                                            <input type="text" placeholder="123 456 7890"
+                                                class="form-control form-control-line" name="telephone" value='{{user.telephone|default_if_none:""}}'>
+                                        </div>
+                                        {% for error in form.telephone.errors %}
+                                        <div class="invalid">
+                                          <strong>{{ error|escape }}</strong>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+
+                                    <div class="col-sm-6">
+                                        <label class="col-md-12">Adresse</label>
+                                        <div class="col-md-12">
+                                            <input type="text" placeholder="124 Main Street"class="form-control form-control-line" value='{{user.adresse|default_if_none:""}}'>
+                                        </div>
+                                        {% for error in form.adresse.errors %}
+                                        <div class="invalid">
+                                          <strong>{{ error|escape }}</strong>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+
+                                <div class="form-group form-check-inline" style="margin: .375rem .75rem;">
+                                    {% if request.user.is_admin %}
+                                        {% if user.is_staff %}
+                                        <input class="form-check-input" type="checkbox" name="is_staff" id="is_staff" checked>
+                                        {% else %}
+                                        <input class="form-check-input" type="checkbox" name="is_staff" id="is_staff">
+                                        {% endif %}
+                                    {% else %}
+                                        {% if user.is_staff %}
+                                        <input class="form-check-input" type="checkbox" name="is_staff" id="is_staff" disabled checked>
+                                        {% else %}
+                                        <input class="form-check-input" type="checkbox" name="is_staff" id="is_staff" disabled>
+                                        {% endif %}
+                                    {% endif %}
+                                    <label for="is_staff" class="form-check-label">Staff</label>
+                                </div>
+
+                                <div class="form-group form-check-inline" style="margin: .375rem .75rem;">
+                                    {% if request.user.is_admin %}
+                                        {% if user.is_active %}
+                                        <input class="form-check-input" type="checkbox" name="is_active" id="is_active" disabled checked>
+                                        {% else %}
+                                        <input class="form-check-input" type="checkbox" name="is_active" id="is_active" disabled>
+                                        {% endif %}
+                                    {% else %}
+                                        {% if user.is_active %}
+                                        <input class="form-check-input" type="checkbox" name="is_active" id="is_active" disabled checked>
+                                        {% else %}
+                                        <input class="form-check-input" type="checkbox" name="is_active" id="is_active" disabled>
+                                        {% endif %}
+                                    {% endif %}
+                                    <label for="is_active" class="form-check-label">Active</label>
+                                </div>
+
+                                {% for group in groups %}
+                                <div class="form-group form-check-inline" style="margin: .375rem .75rem;">
+                                    {% if request.user.is_admin %}
+                                        {% if user|has_group:group.name  %}   
+                                        <input class="form-check-input" type="checkbox" name="{{group.name}}" id="{{group.name}}" checked="">
+                                        {% else %}
+                                        <input class="form-check-input" type="checkbox" name="{{group.name}}" id="{{group.name}}">
+                                        {% endif %}
+                                    {% else %}
+                                        {% if user|has_group:group.name  %}   
+                                        <input class="form-check-input" type="checkbox" name="{{group.name}}" id="{{group.name}}" disabled checked="">
+                                        {% else %}
+                                        <input class="form-check-input" type="checkbox" name="{{group.name}}" id="{{group.name}}" disabled>
+                                        {% endif %}
+                                    {% endif %}
+                                    <label for="{{group.name}}" class="form-check-label">{{group.name}}</label>
+                                </div>
+                                {% endfor %}
+                                <hr>
+
+                                <div class="form-group">
+                                    <label class="col-md-12">Mot de passe</label>
+                                    <div class="col-md-12">
+                                        <input type="password" value="password" class="form-control form-control-line" id="password" name="password" required="">
+                                    </div>
+                                    {% for error in form.password.errors %}
+                                    <div class="invalid">
+                                      <strong>{{ error|escape }}</strong>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+
+                                <!-- <div class="form-group">
+                                    <label class="col-md-12">Message</label>
+                                    <div class="col-md-12">
+                                        <textarea rows="5" class="form-control form-control-line"></textarea>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-12">Select Country</label>
+                                    <div class="col-sm-12">
+                                        <select class="form-control form-control-line">
+                                            <option>London</option>
+                                            <option>India</option>
+                                            <option>Usa</option>
+                                            <option>Canada</option>
+                                            <option>Thailand</option>
+                                        </select>
+                                    </div>
+                                </div> -->
+                                <div class="form-group">
+                                    <div class="col-sm-12">
+                                        <input type="submit" class="btn btn-primary btn-user btn-block" value="Mettre à jour">
+                                    </div>
+                                </div>
+                            </form>
+                          <hr>
+                        </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- /.row -->
+                <div class="row">
+                    <div class="col-md-12 col-xs-12">
+                    <!-- DataTales Example -->
+                      <div class="card shadow mb-4">
+                        <div class="card-header py-3">
+                            Projets affécetés
+                          <div class="d-flex justify-content-between">
+                            <div class="input-group p-2">
+                              <input type="text" class="form-control bg-light border-0 small" placeholder="Rechercher..." aria-label="Rechercher" aria-describedby="basic-addon2" id="myInput">
+                              <div class="input-group-append">
+                                <button class="btn btn-primary" type="button">
+                                  <i class="fas fa-search fa-sm"></i>
+                                </button>
+                              </div>
+
+                            </div>
+
+                            <!-- <div class="input-group p-2">
+                              <input type="number" class="form-control bg-light border-0 small" placeholder="Entry" aria-label="Search" aria-describedby="basic-addon2">
+                            </div> -->
+                          </div>
+
+                        </div>
+
+                        <div class="card-body">
+                          <div class="table-responsive">
+                            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                              <thead>
+                                <tr>
+                                  <th>Projet</th>
+                                  <th>Statut du projet</th>
+                                  <th>Poste</th>
+                                  <th>Rôle</th>
+                                  <th>Date d'affectation</th>
+                                  <th>Actions</th>
+                                </tr>
+                              </thead>
+                              <tfoot>
+                                <tr>
+                                  <th>Projet</th>
+                                  <th>Statut du projet</th>
+                                  <th>Poste</th>
+                                  <th>Rôle</th>
+                                  <th>Date d'affectation</th>
+                                  <th>Actions</th>
+                                </tr>
+                              </tfoot>
+                              <tbody>
+                                {% for team in teams %}
+                                <tr>
+                                  <td>{{team.projet.titre}}</td>
+                                  <td>{{team.projet.statut|yesno:"Fini, En Cours"}}</td>
+                                  <td>{{team.get_user_role_display}}</td>
+                                  <td>{{team.get_user_statut_display}}</td>
+                                  <td>
+                                    {% language 'fr' %}
+                                      {{team.date_creation|date:'D, d M Y H:i:s e'|default_if_none:""}}
+                                    {% endlanguage %}
+                                  </td>
+                                  <td>
+                                    <a href="{% url 'profile' user.id %}" class="btn btn-facebook btn-block">Voir</a>
+                                  </td>
+                                </tr>
+                                {% endfor %}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                </div>
+            </div>
+{% endblock %}
+
+{% block js %}
+  <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
+  <!-- Bootstrap core JavaScript-->
+  <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
+  <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+
+  <!-- Core plugin JavaScript-->
+  <script src="{% static 'vendor/jquery-easing/jquery.easing.min.js' %}"></script>
+
+  <!-- Custom scripts for all pages-->
+  <script src="{% static 'js/sb-admin-2.min.js' %}"></script>
+
+  <!-- Page level plugins -->
+  <script src="{% static 'vendor/datatables/jquery.dataTables.min.js' %}"></script>
+  <script src="{% static 'vendor/datatables/dataTables.bootstrap4.min.js' %}"></script>  <!-- Page level custom scripts -->
+  <script type="text/javascript">
+    $(document).ready(function() {
+      var table = $('#dataTable').DataTable({
+        responsive: true,
+        dom: 'lBfrtip',
+        "bLengthChange": false,
+        buttons: [
+          'copy', 'csv', 'excel', 'pdf', 'print'
+        ],
+        "pagingType": "full_numbers"
+      });
+
+      $('#myInput').on( 'keyup', function () {
+        table.search( this.value ).draw();
+      });
+
+    });
+
+  </script>
+{% endblock %}

@@ -1,0 +1,168 @@
+{% extends 'old/base.html' %}
+{% load static %}
+{% load isHistoryinstance %}
+{% load i18n %}
+{% block pageTitle %}{{title}}{% endblock %}
+{% block pageContent %}
+<!-- JQuery DataTable Css -->
+<style type="text/css">
+  .dataTables_filter, .dataTables_info { display: none; }
+  table.dataTable thead .sorting:before,
+  table.dataTable thead .sorting_asc:before,
+  table.dataTable thead .sorting_desc:before,
+  table.dataTable thead .sorting_asc_disabled:before,
+  table.dataTable thead .sorting_desc_disabled:before {
+    right: 1em;
+    content: "\2191";
+  }
+  table.dataTable thead .sorting:after,
+  table.dataTable thead .sorting_asc:after,
+  table.dataTable thead .sorting_desc:after,
+  table.dataTable thead .sorting_asc_disabled:after,
+  table.dataTable thead .sorting_desc_disabled:after {
+   left: 0.5em;
+   content: "\2193";
+  }
+  th{
+    cursor: pointer;
+  }
+</style>
+
+          <!-- DataTales Example -->
+          <div class="card shadow mb-4">
+            <div class="card-header py-3">
+
+              <div class="d-flex justify-content-between">
+                <div class="input-group p-2">
+                  <input type="text" class="form-control bg-light border-0 small" placeholder="Rechercher..." aria-label="Rechercher" aria-describedby="basic-addon2" id="myInput">
+                  <div class="input-group-append">
+                    <button class="btn btn-primary" type="button">
+                      <i class="fas fa-search fa-sm"></i>
+                    </button>
+                  </div>
+
+                </div>
+
+                <!-- <div class="input-group p-2">
+                  <input type="number" class="form-control bg-light border-0 small" placeholder="Entry" aria-label="Search" aria-describedby="basic-addon2">
+                </div> -->
+              </div>
+
+            </div>
+
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Type de modification</th>
+                      <th>Modifié par</th>
+                    </tr>
+                  </thead>
+                  <tfoot>
+                    <tr>
+                      <th>Date</th>
+                      <th>Type de modification</th>
+                      <th>Modifié par</th>
+                    </tr>
+                  </tfoot>
+                  <tbody>
+                    {% for h in history %}
+
+                    {% if h|isHistoryinstance:'team' %}
+                    <tr style="cursor: pointer;" title="Cliquer pour voir les détails" classe="team"pk="{{h.history_id}}">
+                    {% else %}
+                    <tr style="cursor: pointer;" title="Cliquer pour voir les détails" classe="{{classe}}"pk="{{h.history_id}}">
+                    {% endif %}
+                      <td
+                      {% ifequal h.history_type 'Supprimé' %}
+                      class="table-danger"
+                      {% endifequal %}
+                      >
+                        {% language 'fr' %}
+                          {{ h.history_date|date:'D, d M Y H:i:s e'|default_if_none:"-" }}
+                        {% endlanguage %}
+                      </td>
+                      <td 
+                      {% ifequal h.history_type 'Supprimé' %}
+                      class="table-danger"
+                      {% endifequal %}
+                      >{{ h.history_type }}</td>
+                      <td
+                      {% ifequal h.history_type 'Supprimé' %}
+                      class="table-danger"
+                      {% endifequal %}
+                      >{{ h.history_user|default_if_none:"-" }}</td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+
+  <!-- Page level plugins -->
+    <!-- <script src="{% static 'vendor/datatables/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'vendor/datatables/dataTables.bootstrap4.min.js' %}"></script> -->
+    <!-- Jquery DataTable Plugin Js -->
+    <!-- <script src="{% static 'jquery-datatable/jquery.dataTables.js' %}"></script>
+    <script src="{% static 'jquery-datatable/skin/bootstrap/js/dataTables.bootstrap.js' %}"></script>
+    <script src="{% static 'jquery-datatable/extensions/export/dataTables.buttons.min.js' %}"></script>
+    <script src="{% static 'jquery-datatable/extensions/export/buttons.flash.min.js' %}"></script>
+    <script src="{% static 'jquery-datatable/extensions/export/jszip.min.js' %}"></script>
+    <script src="{% static 'jquery-datatable/extensions/export/pdfmake.min.js' %}"></script>
+    <script src="{% static 'jquery-datatable/extensions/export/vfs_fonts.js' %}"></script>
+    <script src="{% static 'jquery-datatable/extensions/export/buttons.html5.min.js' %}"></script>
+    <script src="{% static 'jquery-datatable/extensions/export/buttons.print.min.js' %}"></script> -->
+
+
+{% endblock %}
+
+{% block js %}
+  <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
+  <!-- Bootstrap core JavaScript-->
+  <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
+  <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+
+  <!-- Core plugin JavaScript-->
+  <script src="{% static 'vendor/jquery-easing/jquery.easing.min.js' %}"></script>
+
+  <!-- Custom scripts for all pages-->
+  <script src="{% static 'js/sb-admin-2.min.js' %}"></script>
+
+  <!-- Page level plugins -->
+  <script src="{% static 'vendor/datatables/jquery.dataTables.min.js' %}"></script>
+  <script src="{% static 'vendor/datatables/dataTables.bootstrap4.min.js' %}"></script>  <!-- Page level custom scripts -->
+  <script type="text/javascript">
+    $(document).ready(function() {
+      var table = $('#dataTable').DataTable({
+        responsive: true,
+        "order": [],
+        "bPaginate": true,
+        "bLengthChange": false,
+        dom: 'lBfrtip',
+        buttons: [
+          'copy', 'csv', 'excel', 'pdf', 'print'
+        ],
+        "pagingType": "full_numbers"
+      });
+
+      $('#myInput').on( 'keyup', function () {
+        table.search( this.value ).draw();
+      });
+
+    });
+
+    //Row clicked envent
+    $('tr').on('click', function() {
+      // alert($(this).attr('classe'))
+      var url = "{% url 'one_history' 'classe' 'pk' %}"
+      .replace('classe', $(this).attr('classe'))
+      .replace('pk',  $(this).attr('pk'));
+      
+      location.href = url;
+    })
+  </script>
+{% endblock %}

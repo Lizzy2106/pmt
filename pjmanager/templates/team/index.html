@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Index</title>
+</head>
+<body>
+	{% for team in teams %}
+		<p>{{team}}<p>
+	{% endfor %}
+	
+	{% for message in messages %}
+		<p id="messages">{{message}}</p>
+	{% endfor %}
+</body>
+</html>
