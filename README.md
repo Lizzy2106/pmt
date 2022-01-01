@@ -8,6 +8,5 @@ The following features have been implemented :
 - Follow the history and progress of the all Projects, Employee
 ## Technologies
 - Django
-- Java
 ## Authors
 - Lizzy ADJAGBA
