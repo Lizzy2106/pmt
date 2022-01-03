@@ -101,8 +101,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'managment',
-        'USER': 'itnum',
-        'PASSWORD': 'itnum',
+        'USER': 'username',
+        'PASSWORD': 'password',
         'HOST': 'localhost',
         'PORT': '3306',
         #optional:
@@ -112,8 +112,6 @@ DATABASES = {
              'init_command': 'SET '
                 'character_set_connection=utf8,'
                 'collation_connection=utf8_bin'
-                #'sql_mode=STRICT_TRANS_TABLES,'    # see note below
-                #'SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED',
         },
         'TEST_CHARSET': 'utf8',
         'TEST_COLLATION': 'utf8_general_ci',
